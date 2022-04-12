@@ -138,16 +138,11 @@ class TKCalendar(Toplevel):
     def day_info(self, day_num):
         """ Opens top window for event interaction, destroys previous top window"""
 
-        def callback_reconfigure():
-            """ Callback to reconfigure calendar on changes with top level """
-            self._event_color_buttons()
-            self._configure_day_buttons()
-
         try:
             self.toplevel.destroy()
-            self.toplevel = DayTopWindow(day_num, self.month, self.year, callback_reconfigure)
+            self.toplevel = DayTopWindow(day_num, self.month, self.year, self._event_color_buttons)
         except AttributeError:
-            self.toplevel = DayTopWindow(day_num, self.month, self.year, callback_reconfigure)
+            self.toplevel = DayTopWindow(day_num, self.month, self.year, self._event_color_buttons)
 
     def open_legend(self):
         """ Opens legend sidebar extension """
@@ -159,6 +154,3 @@ class TKCalendar(Toplevel):
 
         self.legend = TKLegend(self)
 
-
-def open_calendar():
-    TKCalendar().mainloop()

@@ -2,9 +2,12 @@
 Authenticates app with Google Sheets, Google Drive
 
 """
+from socket import socket
+
 import gspread
 import pathlib
 import typing
+from socket import gaierror
 
 Pathlike = typing.Union[str, pathlib.Path]
 
