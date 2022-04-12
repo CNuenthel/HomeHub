@@ -1,10 +1,10 @@
 from tkinter import Label, Tk, Toplevel, E, Frame, NSEW, PhotoImage, Button, CENTER, FLAT, END
 from tkinter.ttk import Combobox, Style
-from events.events import Event
-from events.eventdbcontroller import EventController
-from tkwidgetclasses.number_only_combobox import NumberOnlyCombobox
-from tkwidgetclasses.textfilled_entry import TextFilledEntry
-from img.imgpath import image_path
+from TKCalendar.events.events import Event
+from TKCalendar.events.eventdbcontroller import EventController
+from modifiedwidgets import NumberOnlyCombobox
+from modifiedwidgets import TextFilledEntry
+from TKCalendar.img.imgpath import image_path
 
 
 class TKChangeEvent:
@@ -177,7 +177,7 @@ class TKChangeEvent:
         self.title_entry.configure(bg="white")
         style.configure("TCombobox", fieldbackground="white", background="white")
 
-        event = Event.create(ev_dict)
+        event = Event.create_from_dict(ev_dict)
 
         self.main_frame.destroy()
         if EventController.update_event(event, self.id):

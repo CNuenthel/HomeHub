@@ -2,13 +2,13 @@ from datetime import datetime
 from functools import partial
 from tkinter import *
 
-from events.eventdbcontroller import EventController
-from datehandler.datehandler import DateHandler as dH
-from tkconfiguration.eventcolor import EventColor
-from tkwidgetclasses.hoverbutton import HoverButton
-from toplevels.daytoplevel import DayTopWindow
-from tkwindowextensions.tk_legend import TKLegend
-from img.imgpath import image_path
+from TKCalendar.events.eventdbcontroller import EventController
+from NuenthelHub.TKCalendar.datehandler import DateHandler as dH
+from NuenthelHub.TKCalendar.eventcolor import EventColor
+from modifiedwidgets import HoverButton
+from TKCalendar.toplevels.daytoplevel import DayTopWindow
+from TKCalendar.tkwindowextensions.tk_legend import TKLegend
+from TKCalendar.img.imgpath import image_path
 
 
 class TKCalendar(Toplevel):
@@ -107,8 +107,11 @@ class TKCalendar(Toplevel):
 
     def _configure_rows_columns(self):
         """ Configures rows and columns to expand with resize of window """
-        [self.rowconfigure(i, weight=1) for i in range(self.grid_size()[1])]
-        [self.columnconfigure(i, weight=1) for i in range(self.grid_size()[0])]
+        columns, rows = self.grid_size()
+        for columns in range(columns):
+            self.columnconfigure(columns, weight=1)
+        for rows in range(rows):
+            self.rowconfigure(rows, weight=1)
 
     """ ______________________________________Button Functions ________________________________________________"""
 
@@ -134,11 +137,17 @@ class TKCalendar(Toplevel):
 
     def day_info(self, day_num):
         """ Opens top window for event interaction, destroys previous top window"""
+
+        def callback_reconfigure():
+            """ Callback to reconfigure calendar on changes with top level """
+            self._event_color_buttons()
+            self._configure_day_buttons()
+
         try:
             self.toplevel.destroy()
-            self.toplevel = DayTopWindow(day_num, self.month, self.year)
+            self.toplevel = DayTopWindow(day_num, self.month, self.year, callback_reconfigure)
         except AttributeError:
-            self.toplevel = DayTopWindow(day_num, self.month, self.year)
+            self.toplevel = DayTopWindow(day_num, self.month, self.year, callback_reconfigure)
 
     def open_legend(self):
         """ Opens legend sidebar extension """

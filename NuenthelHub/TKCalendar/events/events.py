@@ -23,7 +23,7 @@ class Event:
         return str(self.__dict__)
 
     @staticmethod
-    def create(kw_dict: dict):
+    def create_from_dict(kw_dict: dict):
         """
         Creates event from dictionary
         Parameters:

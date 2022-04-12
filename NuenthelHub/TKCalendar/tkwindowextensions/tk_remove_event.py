@@ -1,6 +1,6 @@
 from tkinter import Label, Tk, Toplevel, S, Frame, NSEW, PhotoImage, Button, GROOVE, FLAT
-from events.eventdbcontroller import EventController
-from img.imgpath import image_path
+from TKCalendar.events.eventdbcontroller import EventController
+from TKCalendar.img.imgpath import image_path
 
 
 class TKRemoveEvent:

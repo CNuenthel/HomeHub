@@ -1,11 +1,11 @@
 from tkinter import Label, Tk, Toplevel, E, Frame, NSEW, PhotoImage, Button, CENTER, FLAT
 from tkinter.ttk import Combobox, Style
 
-from events.eventdbcontroller import EventController
-from events.events import Event
-from img.imgpath import image_path
-from tkwidgetclasses.number_only_combobox import NumberOnlyCombobox
-from tkwidgetclasses.textfilled_entry import TextFilledEntry
+from TKCalendar.events.eventdbcontroller import EventController
+from TKCalendar.events.events import Event
+from TKCalendar.img.imgpath import image_path
+from modifiedwidgets import NumberOnlyCombobox
+from modifiedwidgets import TextFilledEntry
 
 
 class TKAddEventExtension:
@@ -149,7 +149,7 @@ class TKAddEventExtension:
         self.title_entry.configure(bg="white")
         style.configure("TCombobox", fieldbackground="white", background="white")
 
-        e = Event.create(ev_dict)
+        e = Event.create_from_dict(ev_dict)
 
         """ Destroy extension """
         self.main_frame.destroy()

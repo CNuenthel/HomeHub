@@ -8,19 +8,19 @@ Classes:
 """
 
 from tkinter import Toplevel, Label, CENTER, END, FLAT, Listbox, SINGLE, EW, PhotoImage
-from datehandler.datehandler import DateHandler
-from tkwidgetclasses.hoverbutton import HoverButton
-from tkwindowextensions.tk_add_event import TKAddEventExtension
-from tkwindowextensions.tk_remove_event import TKRemoveEvent
-from tkwindowextensions.tk_change_event import TKChangeEvent
-from events.eventdbcontroller import EventController
-from img.imgpath import image_path
+from TKCalendar.datehandler import DateHandler
+from modifiedwidgets import HoverButton
+from TKCalendar.tkwindowextensions.tk_add_event import TKAddEventExtension
+from TKCalendar.tkwindowextensions.tk_remove_event import TKRemoveEvent
+from TKCalendar.tkwindowextensions.tk_change_event import TKChangeEvent
+from TKCalendar.events.eventdbcontroller import EventController
+from TKCalendar.img.imgpath import image_path
 
 
 class DayTopWindow(Toplevel):
     """ Toplevel class for event operations on the TKCalendar """
 
-    def __init__(self, day: int, month: int, year: int):
+    def __init__(self, day: int, month: int, year: int, callback: callable = None):
         super().__init__()
 
         """ Window Attributes """
@@ -31,6 +31,7 @@ class DayTopWindow(Toplevel):
         self.configure(bg="#D1D6D3")
         self.extension = None
         self.confirmation = None
+        self.calendar_callback = callback
 
         """ Date Attributes """
         self.day = day
@@ -96,7 +97,11 @@ class DayTopWindow(Toplevel):
             list_data = ["No Events"]
         else:
             list_data.insert(0, "Select An Event")
-        [self.event_box.insert(END, ev_data) for ev_data in list_data]
+
+        for ev_data in list_data:
+            self.event_box.insert(END, ev_data)
+
+        self.calendar_callback()
 
     """ _______________________________________ Button Functions ____________________________________________________"""
 

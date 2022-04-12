@@ -1,6 +1,6 @@
 from tkinter import *
 
-from TKBudget.tk_budget import open_budget
+from TKBudget.tkbudget import TKBudget
 from TKCalendar.tkcalendar import open_calendar
 
 """ _____________________ Functional ________________________________________________________________________________"""
@@ -11,7 +11,7 @@ def calendar():
 
 
 def budget():
-    open_budget()
+    TKBudget().mainloop()
 
 
 # Main Window
@@ -39,7 +39,7 @@ button_bg = "white"
 button_fg = "black"
 
 calendar_button = Button(
-    text="calendar_images",
+    text="Calendar",
     width=15,
     height=5,
     bg=button_bg,

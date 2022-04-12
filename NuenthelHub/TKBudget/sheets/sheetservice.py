@@ -37,7 +37,7 @@ class SheetService:
 
     def create_sheet(self, sheet_name: str):
         """ Creates a fresh Google Sheet """
-        return self.client.create(sheet_name)
+        return self.client.create_from_dict(sheet_name)
 
     def create_worksheet(self, worksheet_name: str, rows: int, cols: int):
         """ Creates a worksheet within workbook with designated rows and columns """
