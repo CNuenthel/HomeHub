@@ -3,3 +3,4 @@ setuptools==62.1.0
 wheel==0.37.1
 matplotlib==3.5.1
 gspread==5.3.2
+selenium==4.1.3
