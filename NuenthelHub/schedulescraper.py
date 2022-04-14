@@ -3,6 +3,7 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from datetime import datetime
 from TKCalendar.events.eventdbcontroller import EventController
+from TKCalendar.events.events import Event
 import json
 
 with open("config.json", "r") as f:
@@ -11,18 +12,12 @@ with open("config.json", "r") as f:
 
 class CodyWorkSchedule:
     def __init__(self):
-        self.schedule = {}
         self.username = config["scraper_user"]
         self.password = config["scraper_pass"]
-        self.schedule = {}
-        self.years = []
-        self.months = []
-        self.dates = []
-        self.shifts = []
-        self._obtain_schedule_data()
-        self._format_data()
 
-    def _obtain_schedule_data(self):
+        self._scrape()
+
+    def _scrape(self):
         # Open website in Chrome browser
         chrome_options = Options()
         chrome_options.add_experimental_option("detach", True)  # Keeps window open
@@ -78,7 +73,7 @@ class CodyWorkSchedule:
 
         browser.close()
 
-    def _format_data(self):
+    # Format Data
         # Set list to start on current day
         start_index = self.raw_days.index(datetime.now().day)
         self.days = self.raw_days[start_index:]
@@ -93,10 +88,10 @@ class CodyWorkSchedule:
         self.years = []
 
         # change all day values to integers
-        for j in enumerate(self.days):
+        for day in self.days:
 
             # Format month/year counts
-            if j == 1:
+            if day == 1:
                 month_val = int(month_val) + 1
 
             if month_val == 13:
@@ -107,22 +102,26 @@ class CodyWorkSchedule:
             self.years.append(year_val)
             self.months.append(month_val)
 
-    def save_to_calendar_events(self):
-        # Start schedule save data at first of month
-        date_shifts = [[self.years[i], self.months[i], self.dates[i], self.shifts[i]] for i in range(len(self.shifts))
-                       if self.shifts[i] not in ["DO"]]
+        # Save Events
+        e = Event()
 
-        for item in date_shifts:
-            year = item[0]
-            month = item[1]
-            day = item[2]
+        for i, j in enumerate(self.shifts):
 
-            if item[3] in ["OH", "VA"]:
-                shift_time = item[3]
-            else:
-                shift_time = f"{item[3]}:00"
+            if j != 0:
+                shift_dict = {
+                    "year": self.years[i],
+                    "month": self.months[i],
+                    "day": self.days[i],
+                    "time_hours": self.shifts[i],
+                    "time_minutes": 0,
+                    "category": "c-work",
+                    "title": "C-Work"
+                }
 
-            event_string = f"{shift_time}-Cody Works"
+                for key in shift_dict:
+                    setattr(e, key, shift_dict[key])
+
+                EventController.insert(e)
 
 
 x = CodyWorkSchedule()
