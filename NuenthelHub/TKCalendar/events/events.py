@@ -1,5 +1,5 @@
 """
-Module to hold the event model
+Module to hold the Event model
 """
 
 

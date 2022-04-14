@@ -1,17 +1,13 @@
-from datetime import datetime
-from functools import partial
-from tkinter import *
 
-from TKCalendar.events.eventdbcontroller import EventController
-from NuenthelHub.TKCalendar.datehandler import DateHandler as dH
-from NuenthelHub.TKCalendar.eventcolor import EventColor
-from modifiedwidgets import HoverButton
-from TKCalendar.toplevels.daytoplevel import DayTopWindow
-from TKCalendar.tkwindowextensions.tk_legend import TKLegend
-from TKCalendar.img.imgpath import image_path
+from tkinter import Tk, Frame, FLAT, Label, LEFT, NSEW, GROOVE
 
 
-class TKCalendar(Tk):
+bg_color = "#909090"
+border_color = "#9594B7"
+font = "Roboto "
+header_color = "#232323"
+
+class TKChores(Tk):
     """ TKinter Calendar """
 
     def __init__(self):
@@ -19,14 +15,30 @@ class TKCalendar(Tk):
 
         """ Window Attributes """
         self.minsize(width=500, height=350)
+        self.configure(background=bg_color)
         self.title("Chores")
-        self.main_frame = None
 
         """ Internal Functions """
+        self._make_header()
         self._configure_rows_columns()
 
-    def _create_main_frame(self):
-        self.main_frame = Frame(self)
+    def _make_header(self):
+        self.header_frame = Frame(self, background=header_color, relief=FLAT)
+        self.header_frame.grid(row=0, column=0, columnspan=8, sticky=NSEW)
+        self.header_label = Label(self.header_frame, bg=header_color, fg="white", text="Chores",
+                                  font=font + "25 underline")
+        self.header_label.grid(row=0, column=0, columnspan=1, sticky=NSEW, padx=15)
+        self.darklight_frame = Frame(self, background=header_color, relief=FLAT)
+        self.darklight_frame.grid(row=1, column=0, columnspan=8, sticky=NSEW)
+
+    def _make_chore_window(self):
+        self.border_frame = Frame(self, bg=border_color, borderwidth=3, relief=GROOVE)
+        self.border_frame.grid(row=1, column=0, columnspan=8, sticky=NSEW, padx=10, pady=10)
+        self.chore_frame = Frame(self.border_frame, background=bg_color, borderwidth=3, relief=GROOVE)
+        self.chore_frame.grid(row=0, column=0, columnspan=8, padx=5, pady=5, ipadx=10, sticky=NSEW)
+
+        
+
 
     def _configure_rows_columns(self):
         """ Configures rows and columns to expand with resize of window """
@@ -41,3 +53,4 @@ class TKCalendar(Tk):
 def btn_pushed():
     print("Button Pushed!")
 
+x = TKChores().mainloop()
