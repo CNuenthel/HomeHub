@@ -43,10 +43,11 @@ class TinyDbService(Generic[T]):
 
     def insert(self, document: T):
         """Insert a document, returns the updated document"""
-        if vars(document) not in self.db.all():
+        if vars(document) not in [vars(self.marshall_no_id(doc)) for doc in self.db.all()]:
             id = self.db.insert(vars(document))
             document.id = id
             return document
+        print(f"{vars(document)} not added: Duplicate Entry")
 
     def find_by_id(self, id: int):
         """ Find doc by id """
@@ -60,7 +61,6 @@ class TinyDbService(Generic[T]):
     def update_event(self, updated_model: T, id: int):
         return self.db.update(updated_model.__dict__, Query().id == id, [id])
 
-
     def marshall(self, doc):
         """Marshall a model object from a tinydb document"""
         model = self.modelClass()
@@ -68,3 +68,14 @@ class TinyDbService(Generic[T]):
             setattr(model, key, doc[key])
         setattr(model, "id", doc.doc_id)
         return model
+
+    def marshall_no_id(self, doc):
+        """Marshall a model object from a tinydb document without adding id attribute"""
+        model = self.modelClass()
+        for key in doc:
+            if key != "id":
+                setattr(model, key, doc[key])
+        return model
+
+    """ ________________ Model Specific Queries _____________________________________________"""
+

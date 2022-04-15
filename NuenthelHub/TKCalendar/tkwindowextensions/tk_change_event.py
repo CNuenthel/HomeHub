@@ -2,8 +2,8 @@ from tkinter import Label, Tk, Toplevel, E, Frame, NSEW, PhotoImage, Button, CEN
 from tkinter.ttk import Combobox, Style
 from TKCalendar.events.events import Event
 from TKCalendar.events.eventdbcontroller import EventController
-from modifiedwidgets import NumberOnlyCombobox
-from modifiedwidgets import TextFilledEntry
+from supportmodules.modifiedwidgets import NumberOnlyCombobox
+from supportmodules.modifiedwidgets import TextFilledEntry
 from TKCalendar.img.imgpath import image_path
 
 

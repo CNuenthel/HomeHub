@@ -16,13 +16,8 @@ class TKLegend:
         self.column_count = root_window.grid_size()[0]
 
         """ Internal Functions"""
-        self._modify_root_geometry()
         self._create_main_frame()
         self._create_legend_colors()
-
-    def _modify_root_geometry(self):
-        """ Modifies root window size to compensate for sidebar inclusion """
-        self.root.minsize(width=803, height=700)
 
     def _create_main_frame(self):
         """ Create a frame for add event widgets """

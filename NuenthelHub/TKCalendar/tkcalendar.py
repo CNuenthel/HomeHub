@@ -5,21 +5,21 @@ from tkinter import *
 from TKCalendar.events.eventdbcontroller import EventController
 from NuenthelHub.TKCalendar.datehandler import DateHandler as dH
 from NuenthelHub.TKCalendar.eventcolor import EventColor
-from modifiedwidgets import HoverButton
+from supportmodules.modifiedwidgets import HoverButton
 from TKCalendar.toplevels.daytoplevel import DayTopWindow
 from TKCalendar.tkwindowextensions.tk_legend import TKLegend
 from TKCalendar.img.imgpath import image_path
 
 
-class TKCalendar(Toplevel):
+class TKCalendar(Frame):
     """ TKinter Calendar """
 
     def __init__(self):
         super().__init__()
 
         """ Window Attributes """
-        self.minsize(width=700, height=700)
-        self.title("TK Calendar")
+        # self.minsize(width=700, height=700)
+        # self.title("TK Calendar")
         self.date_buttons = []
         self.toplevel = None
         self.legend = None
@@ -149,7 +149,7 @@ class TKCalendar(Toplevel):
         if self.legend:
             self.legend.main_frame.destroy()
             self.legend = None
-            self.minsize(width=700, height=700)
+            # self.minsize(width=700, height=700)
             return
 
         self.legend = TKLegend(self)
