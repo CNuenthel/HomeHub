@@ -1,10 +1,10 @@
 import json
 from tkinter import Tk, Frame, FLAT, Label, NSEW, GROOVE, OptionMenu, StringVar, PhotoImage, Button, DISABLED, SUNKEN, \
-    ACTIVE
+    ACTIVE, SE
 from NuenthelHub.TKChores.chores.chorespath import chores_path
 from NuenthelHub.TKChores.img.image_path import image_path
+from NuenthelHub.supportmodules.modifiedwidgets import HoverButton
 from functools import partial
-from time import sleep
 
 bg_color = "#909090"
 border_color = "#9594B7"
@@ -55,6 +55,9 @@ class TKChores(Tk):
         self.header_label = Label(self.header_frame, bg=header_color, fg="white", text="Chores",
                                   font=font + "25 underline")
         self.header_label.grid(row=0, column=0, columnspan=1, sticky=NSEW, padx=15)
+
+        self.add_chore_btn = HoverButton(self, text="Add Chore", command=btn_pushed, relief=FLAT, bg=header_color, fg="white")
+        self.add_chore_btn.grid(row=0, column=2, padx=15, sticky=SE)
 
         self.darklight_frame = Frame(self, background=header_color, relief=GROOVE)
         self.darklight_frame.grid(row=1, column=0, rowspan=1, columnspan=3, sticky=NSEW)
