@@ -1,0 +1,20 @@
+{
+  "monthly": {
+  },
+  "weekly": {
+  },
+  "daily": {
+    "chore1": {
+      "name": "clean thing",
+      "complete": "false",
+      "last_completed_by": "cody",
+      "category": "daily"
+    },
+    "chore2": {
+      "name": "clean thing",
+      "complete": "false",
+      "last_completed_by": "cody",
+      "category": "daily"
+    }
+  }
+}
