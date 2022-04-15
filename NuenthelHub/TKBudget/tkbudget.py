@@ -145,7 +145,7 @@ class TKBudget(Frame):
 
     @staticmethod
     def _configure_rows_cols(master):
-        """ Configure rows to 1:1 weight """
+        """ Configure rows and columns to 1:1 weight """
         for i in range(master.grid_size()[1]):
             master.rowconfigure(i, weight=1)
         for i in range(master.grid_size()[0]):
