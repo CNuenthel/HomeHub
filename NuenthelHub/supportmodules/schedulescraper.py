@@ -6,7 +6,7 @@ from TKCalendar.events.eventdbcontroller import EventController
 from TKCalendar.events.events import Event
 import json
 
-with open("config.json", "r") as f:
+with open("../config.json", "r") as f:
     config = json.load(f)
 
 
@@ -123,5 +123,3 @@ class CodyWorkSchedule:
 
                 EventController.insert(e)
 
-
-x = CodyWorkSchedule()

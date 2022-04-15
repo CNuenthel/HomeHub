@@ -1,10 +1,11 @@
 from functools import partial
 from tkinter import *
 
-from TKBudget.nuenthelsheetdata import NuenthelSheetsData
-from modifiedwidgets import HoverButton, HoverLabel, SnapbackEntry
-from TKBudget.expenseplot import ExpensePlot
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+
+from TKBudget.expenseplot import ExpensePlot
+from TKBudget.nuenthelsheetdata import NuenthelSheetsData
+from supportmodules.modifiedwidgets import HoverButton, HoverLabel, SnapbackEntry
 
 bg_color = "#909090"
 border_color = "#9594B7"
@@ -12,16 +13,14 @@ font = "Roboto "
 header_color = "#232323"
 
 
-class TKBudget(Toplevel):
+class TKBudget(Frame):
     """ Creates a top level GUI for budget handling """
 
     def __init__(self):
         super().__init__()
         """Window Attributes"""
-        self.title("Budget")
         self.configure(background=bg_color)
         self.bind_all("<Button-1>", lambda event: event.widget.focus_set())
-        self.geometry("")
 
         """External Helper Classes"""
         self.nfsheet = NuenthelSheetsData("N-Fam 2022")
@@ -233,4 +232,3 @@ class TKBudget(Toplevel):
             self._configure_recents(str_repr, value)
             self._configure_incomes()
             self._make_graph()
-

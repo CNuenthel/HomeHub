@@ -9,7 +9,7 @@ Classes:
 
 from tkinter import Toplevel, Label, CENTER, END, FLAT, Listbox, SINGLE, EW, PhotoImage
 from TKCalendar.datehandler import DateHandler
-from modifiedwidgets import HoverButton
+from supportmodules.modifiedwidgets import HoverButton
 from TKCalendar.tkwindowextensions.tk_add_event import TKAddEventExtension
 from TKCalendar.tkwindowextensions.tk_remove_event import TKRemoveEvent
 from TKCalendar.tkwindowextensions.tk_change_event import TKChangeEvent

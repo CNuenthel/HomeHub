@@ -4,8 +4,8 @@ from tkinter.ttk import Combobox, Style
 from TKCalendar.events.eventdbcontroller import EventController
 from TKCalendar.events.events import Event
 from TKCalendar.img.imgpath import image_path
-from modifiedwidgets import NumberOnlyCombobox
-from modifiedwidgets import TextFilledEntry
+from supportmodules.modifiedwidgets import NumberOnlyCombobox
+from supportmodules.modifiedwidgets import TextFilledEntry
 
 
 class TKAddEventExtension:

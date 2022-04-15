@@ -2,16 +2,21 @@ from tkinter import *
 
 from TKBudget.tkbudget import TKBudget
 from TKCalendar.tkcalendar import TKCalendar
+from supportmodules.schedulescraper import CodyWorkSchedule
 
 """ _____________________ Functional ________________________________________________________________________________"""
 
 
 def calendar():
-    TKCalendar().mainloop()
+    TKCalendar().grid(row=0, column=0)
 
 
 def budget():
-    TKBudget().mainloop()
+    TKBudget().grid(row=0, column=1)
+
+
+def scraper():
+    CodyWorkSchedule()
 
 
 # Main Window
@@ -72,7 +77,8 @@ ndhp_button = Button(
     height=5,
     bg=button_bg,
     fg=button_fg,
-    relief=SUNKEN
+    relief=SUNKEN,
+    command=scraper
 )
 ndhp_button.place(
     x=1260,
