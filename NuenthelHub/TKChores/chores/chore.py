@@ -6,7 +6,7 @@ Module to hold the Chore model
 class Chore:
     """ Models a chore """
     name: str = None
-    complete: bool = None
+    complete: bool = False
     last_completed_by: str = None
     category: str = None
 
@@ -24,7 +24,7 @@ class Chore:
             an Event object with attributes provided from kw_dict
         """
         chore = Chore()
-        for key in kw_dict:
-            setattr(chore, key, kw_dict[key])
+        for k, v in kw_dict.items():
+            setattr(chore, k, v)
         return chore
 

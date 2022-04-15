@@ -41,8 +41,12 @@ class TinyDbService(Generic[T]):
         """Returns a document meeting all key/values of query dict"""
         return [self.marshall(doc) for doc in self.db.all() if query_dict.items() <= doc.items()]
 
-    def insert(self, document: T):
+    def insert(self, document: T, force=False):
         """Insert a document, returns the updated document"""
+        if force:
+            id = self.db.insert(vars(document))
+            document.id = id
+            return document
         if vars(document) not in [vars(self.marshall_no_id(doc)) for doc in self.db.all()]:
             id = self.db.insert(vars(document))
             document.id = id

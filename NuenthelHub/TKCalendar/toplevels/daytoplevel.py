@@ -144,10 +144,7 @@ class DayTopWindow(Toplevel):
     def add_event(self):
         """ Opens add event extension """
         if not self.extension:
-
             self.confirmation.destroy() if self.confirmation else None
-
-            self.extension = True
             self.extension = TKAddEventExtension(self, self.day, self.month, self.year, self._configure_event_box)
 
     def remove_event(self):
