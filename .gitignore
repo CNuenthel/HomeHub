@@ -2,4 +2,4 @@ chromedriver.exe
 .idea/
 .venv/
 config.json
-.__pycache__
+.__pycache__/
