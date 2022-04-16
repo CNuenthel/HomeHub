@@ -1,7 +1,6 @@
 from functools import partial
 from tkinter import Tk, Frame, FLAT, Label, NSEW, GROOVE, OptionMenu, StringVar, PhotoImage, Button, DISABLED, ACTIVE, \
     W, E
-
 from NuenthelHub.TKChores.chorehandler import ChoreHandler
 from NuenthelHub.TKChores.chores.choredbcontroller import ChoreController
 from NuenthelHub.TKChores.img.image_path import image_path
@@ -301,14 +300,14 @@ class TKChores(Tk):
     def _remove_weekly_chore(self, *args):
         title = self.weekly_chores[args[0]][0]["text"]
         chore_id = ChoreController.find_by_element("name", title)[0].doc_id
-        ChoreController.remove_doc("complete", True, chore_id)
+        ChoreController.remove_doc(chore_id)
         for widget in self.weekly_chores[args[0]][:-1]:
             widget.destroy()
 
     def _remove_monthly_chore(self, *args):
         title = self.monthly_chores[args[0]][0]["text"]
         chore_id = ChoreController.find_by_element("name", title)[0].doc_id
-        ChoreController.remove_doc("complete", True, chore_id)
+        ChoreController.remove_doc(chore_id)
         for widget in self.monthly_chores[args[0]][:-1]:
             widget.destroy()
 

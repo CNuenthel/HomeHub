@@ -1,9 +1,10 @@
 from tkinter import Label, Tk, Toplevel, Frame, NSEW, PhotoImage, Button, CENTER, FLAT
-from tkinter.ttk import Combobox
+from tkinter.ttk import Combobox, Style
+from tkinter.colorchooser import askcolor
+from NuenthelHub.TKLevelUp.members.member import Member
+from NuenthelHub.TKLevelUp.members.memberdbcontroller import MemberController
 from NuenthelHub.supportmodules.modifiedwidgets import TextFilledEntry
-from NuenthelHub.TKChores.img.image_path import image_path
-from NuenthelHub.TKChores.chores.chore import Chore
-from NuenthelHub.TKChores.chores.choredbcontroller import ChoreController
+from NuenthelHub.TKLevelUp.img.image_path import image_path
 
 bg_color = "#909090"
 border_color = "#9594B7"
@@ -13,21 +14,26 @@ subtle_red = "#FDD0CC"
 subtle_green = "#ccfdcc"
 
 
-class TKAddChoreExtension:
+class TKAddMemberExtension:
     def __init__(self, root_window: Tk or Toplevel):
         """ Extension Attributes """
         self.root = root_window
         self.grid_row_start = root_window.grid_size()[1]
         self.column_count = root_window.grid_size()[0]
+        self.user_color = None
 
         """ DB Handler """
-        self.db = ChoreController
+        self.db = MemberController
+
+        """ TTK Style """
+        self.style = Style()
+        self.style.configure("A.Button", font=font+"10 bold", background=bg_color)
 
         """ Internal Functions """
         self._create_main_frame()
         self._make_header()
-        self._make_title_entry()
-        self._make_category_combobox()
+        self._make_name_entry()
+        self._make_color_selector()
         self._make_add_cancel_buttons()
 
     def _create_main_frame(self):
@@ -40,21 +46,17 @@ class TKAddChoreExtension:
 
     def _make_header(self):
         Label(
-            self.main_frame, text="ADD CHORE", font="Courier 18 underline", bg=bg_color) \
+            self.main_frame, text="ADD MEMBER", font=font+"18 underline", bg=bg_color) \
             .pack(pady=8)
 
-    def _make_title_entry(self):
+    def _make_name_entry(self):
         """ Creates title text filled entry """
-        self.title_entry = TextFilledEntry(self.main_frame, "Title", justify=CENTER)
-        self.title_entry.pack(pady=8)
+        self.name_entry = TextFilledEntry(self.main_frame, "Name", justify=CENTER)
+        self.name_entry.pack(pady=8)
 
-    def _make_category_combobox(self):
-        """ Create combobox to collect category """
-        categories = ["Daily", "Weekly", "Monthly"]
-        self.category_selector = Combobox(self.main_frame, values=categories, justify=CENTER, background="white", state="readonly")
-        self.category_selector.pack(pady=8)
-        self.category_selector.set("Category")
-        self.category_selector.bind("<<ComboboxSelected>>", lambda e: self.main_frame.focus())
+    def _make_color_selector(self):
+        """ Creates a button for color selector """
+        self.color_btn = Button(self.main_frame, text="Choose Color", command=self._pick_color)
 
     def _make_add_cancel_buttons(self):
         """ Create add/cancel buttons """
@@ -73,29 +75,27 @@ class TKAddChoreExtension:
                              bg=bg_color)
         self.cancel.grid(row=0, column=1)
 
-    """ _________________________ BUTTON FUNCTIONS __________________________________________________________________"""
+    # """ ________________________ BUTTON FUNCTIONS _________________________________________________________________"""
 
     def _add_chore(self):
         """ Add event to DB """
-        name = self.title_entry.get()
-        category = self.category_selector.get()
+        name = self.name_entry.get()
+        color = self.user_color
 
-        if name and category != "Category":
+        if name:
             data = {
                 "name": name,
-                "category": category,
-                "last_completed_by": None,
-                "complete": False
+                "color": color,
             }
 
-            chore = Chore().create_from_dict(data)
+            member = Member.create_from_dict(data)
 
             self.main_frame.destroy()
 
-            if self.db.insert(chore, force=True):
-                self.root.confirmation = Label(self.root, text="Chore Added!", font="Courier 10", justify=CENTER)
+            if self.db.insert(member):
+                self.root.confirmation = Label(self.root, text="Member Added!", font=font+"10", justify=CENTER)
             else:
-                self.root.confirmation = Label(self.root, text="Sorry, something went wrong...", font="Courier 10", justify=CENTER)
+                self.root.confirmation = Label(self.root, text="Sorry, something went wrong...", font=font+"10", justify=CENTER)
 
             self.root.confirmation.grid(row=self.grid_row_start+1, column=0, columnspan=self.column_count, pady=10)
             self.root.extension = None
@@ -104,3 +104,7 @@ class TKAddChoreExtension:
         """ Destroy add event extension """
         self.main_frame.destroy()
         self.root.extension = None
+
+    def _pick_color(self):
+        self.user_color = askcolor(title="Color Selector")
+        self.style.configure("A.Button", background=self.user_color)
