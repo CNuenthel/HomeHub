@@ -6,7 +6,7 @@ from TKCalendar.events.eventdbcontroller import EventController
 from TKCalendar.events.events import Event
 import json
 
-with open("../config.json", "r") as f:
+with open("C:/Users/cnuen/OneDrive/Desktop/Github/HomeHub/NuenthelHub/config.json", "r") as f:
     config = json.load(f)
 
 

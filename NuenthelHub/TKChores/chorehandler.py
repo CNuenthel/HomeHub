@@ -45,7 +45,24 @@ class ChoreHandler:
         chore_number = ceil(len(uncompleted_chores)/self.months_left)
         return choices(uncompleted_chores, k=chore_number)
 
+    def reset_daily_chores(self):
+        daily_chores = self.db.find_by_element("category", "Daily")
+        for doc in daily_chores:
+            self.db.update_doc_element("complete", False, doc.doc_id)
+
+    def reset_weekly_chores(self):
+        weekly_chores = self.db.find_by_element("category", "Weekly")
+        for doc in weekly_chores:
+            self.db.update_doc_element("complete", False, doc.doc_id)
+
+    def reset_monthly_chores(self):
+        monthly_chores = self.db.find_by_element("category", "Monthly")
+        for doc in monthly_chores:
+            self.db.update_doc_element("complete", False, doc.doc_id)
+
 
 if __name__ == '__main__':
     x = ChoreHandler()
-    print(x.get_dailies())
+    x.reset_daily_chores()
+    x.reset_weekly_chores()
+    x.reset_monthly_chores()

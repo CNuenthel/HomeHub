@@ -180,7 +180,7 @@ class TKChangeEvent:
         event = Event.create_from_dict(ev_dict)
 
         self.main_frame.destroy()
-        if EventController.update_event(event, self.id):
+        if EventController.update_doc(event, self.id):
             self.root.confirmation = Label(self.root, text="Event Updated!", font="Courier 10")
         else:
             self.root.confirmation = Label(self.root, text="Sorry, something went wrong...", font="Courier 10")

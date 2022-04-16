@@ -6,9 +6,19 @@ from supportmodules.schedulescraper import CodyWorkSchedule
 
 """ _____________________ Functional ________________________________________________________________________________"""
 
+calendar_frame = None
+
 
 def calendar():
-    TKCalendar().grid(row=0, column=0)
+    global calendar_frame
+
+    if calendar_frame:
+        calendar_frame.destroy()
+        calendar_frame = None
+        return
+    else:
+        calendar_frame = TKCalendar()
+        calendar_frame.grid(row=0, column=0)
 
 
 def budget():
@@ -21,10 +31,8 @@ def scraper():
 
 # Main Window
 main = Tk()
-main.geometry(f"{1720}x{968}")
-main.resizable(False, False)
+main.geometry(f"{main.winfo_screenwidth()}x{main.winfo_screenheight()}")
 main.title("Nuenthel Hub")
-
 # Get Display Specs
 screen_width = main.winfo_screenwidth()
 screen_height = main.winfo_screenheight()

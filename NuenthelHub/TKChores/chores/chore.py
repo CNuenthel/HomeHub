@@ -9,6 +9,7 @@ class Chore:
     complete: bool = False
     last_completed_by: str = None
     category: str = None
+    id: int = None
 
     def __repr__(self):
         return str(self.__dict__)

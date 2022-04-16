@@ -62,8 +62,11 @@ class TinyDbService(Generic[T]):
         doc = self.db.remove(doc_ids=[id])
         return doc
 
-    def update_event(self, updated_model: T, id: int):
+    def update_doc(self, updated_model: T, id: int):
         return self.db.update(updated_model.__dict__, Query().id == id, [id])
+
+    def update_doc_element(self, key, value, id: int):
+        return self.db.update({key: value}, Query().id == id, [id])
 
     def marshall(self, doc):
         """Marshall a model object from a tinydb document"""
@@ -80,6 +83,4 @@ class TinyDbService(Generic[T]):
             if key != "id":
                 setattr(model, key, doc[key])
         return model
-
-    """ ________________ Model Specific Queries _____________________________________________"""
 
