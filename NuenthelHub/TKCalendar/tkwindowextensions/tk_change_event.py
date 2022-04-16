@@ -1,10 +1,11 @@
-from tkinter import Label, Tk, Toplevel, E, Frame, NSEW, PhotoImage, Button, CENTER, FLAT, END
-from tkinter.ttk import Combobox, Style
-from TKCalendar.events.events import Event
+from tkinter import Tk, Toplevel, E, NSEW, PhotoImage, CENTER, END
+from tkinter.ttk import Combobox, Style, Label, Frame, Button
+
 from TKCalendar.events.eventdbcontroller import EventController
+from TKCalendar.events.events import Event
+from TKCalendar.img.imgpath import image_path
 from supportmodules.modifiedwidgets import NumberOnlyCombobox
 from supportmodules.modifiedwidgets import TextFilledEntry
-from TKCalendar.img.imgpath import image_path
 
 
 class TKChangeEvent:
@@ -53,16 +54,16 @@ class TKChangeEvent:
 
     def _create_main_frame(self):
         """ Create a frame for add event widgets """
-        self.border_frame = Frame(self.root, bg=self.root["bg"])
+        self.border_frame = Frame(self.root, style="AddMain.TFrame")
         self.border_frame.grid(row=self.grid_row_start, column=0, columnspan=self.column_count, sticky=NSEW)
-        self.main_frame = Frame(self.root, bg="#BDC1BE")
+        self.main_frame = Frame(self.root, style="AddMain.TFrame")
         self.main_frame.grid(row=self.grid_row_start, column=0, columnspan=self.column_count, sticky=NSEW, padx=10,
                              pady=10)
 
     def _make_header(self):
         """ Create Add Event header """
         Label(
-            self.main_frame, text="CHANGE EVENT", font="Courier 18 underline", bg="#BDC1BE") \
+            self.main_frame, text="CHANGE EVENT", font="Courier 18 underline", style="AddExt.TLabel") \
             .pack(pady=15)
 
     def _make_title_entry(self):
@@ -78,14 +79,14 @@ class TKChangeEvent:
                      14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24]
 
         self.hour_selector = NumberOnlyCombobox(time_frame, "Hour", 2, values=hour_nums, justify=CENTER,
-                                                background="white")
+                                                background="white", style="ReqInfo.TCombobox")
         self.hour_selector.set("Hour")
         self.hour_selector.grid(row=0, column=0)
 
         minute_nums = ["00"]
         minute_nums.extend([str(num * 10) for num in range(1, 6)])
         self.minute_selector = NumberOnlyCombobox(time_frame, "Minutes", 2, values=minute_nums, justify=CENTER,
-                                                  background="white")
+                                                  background="white", style="ReqInfo.TCombobox")
         self.minute_selector.set("00")
         self.minute_selector.grid(row=0, column=1, sticky=E)
 
@@ -107,19 +108,18 @@ class TKChangeEvent:
 
     def _make_confirm_deny_buttons(self):
         """ Create add/cancel buttons """
-        button_frame = Frame(self.main_frame, bg="#BDC1BE")
+        button_frame = Frame(self.main_frame, style="AddMain.TFrame")
         button_frame.pack(pady=8)
 
         """ Create final add button """
-        self.confirm_img = PhotoImage(file=image_path+"confirm.png")
-        self.confirm = Button(button_frame, image=self.confirm_img, command=self._change_event, relief=FLAT,
-                              bg="#BDC1BE")
+        self.confirm_img = PhotoImage(file=image_path + "confirm.png")
+        self.confirm = Button(button_frame, image=self.confirm_img, command=self._change_event,
+                              style="AddCancel.TButton")
         self.confirm.grid(row=0, column=0)
 
         """ Create cancel button """
-        self.cancel_img = PhotoImage(file=image_path+"deny.png")
-        self.cancel = Button(button_frame, image=self.cancel_img, command=self._cancel_event, relief=FLAT,
-                             bg="#BDC1BE")
+        self.cancel_img = PhotoImage(file=image_path + "deny.png")
+        self.cancel = Button(button_frame, image=self.cancel_img, command=self._cancel_event, style="AddCancel.TButton")
         self.cancel.grid(row=0, column=1)
 
     def _get_event_data(self):
@@ -164,28 +164,29 @@ class TKChangeEvent:
             "category": self.category_selector.get()
         }
 
-        style = Style()
+        self.change_style = Style()
         if ev_dict["time_hours"] == "Hour" or ev_dict["time_minutes"] == "Minutes" or ev_dict["title"] == "Title":
-            style.configure("TCombobox", fieldbackground="red", background="white")
+            self.change_style.configure("ReqInfo.TCombobox", fieldbackground="red", background="white")
             self.title_entry.configure(bg="red")
-            self.warning = Label(self.main_frame, text="Please fill in required information.", bg="#BDC1BE", fg="red",
+            self.warning = Label(self.main_frame, text="Please fill in required information.",
+                                 style="ReqInfo.TCombobox",
                                  font="Helvetica 13")
             self.warning.grid(row=6, column=0, pady=10)
             return
 
         """ Reconfigure red zones if triggered """
         self.title_entry.configure(bg="white")
-        style.configure("TCombobox", fieldbackground="white", background="white")
+        self.change_style.configure("ReqInfo.TCombobox", fieldbackground="white", background="white")
 
         event = Event.create_from_dict(ev_dict)
 
         self.main_frame.destroy()
         if EventController.update_doc(event, self.id):
-            self.root.confirmation = Label(self.root, text="Event Updated!", font="Courier 10")
+            self.root.confirmation = Label(self.root, text="Event Updated!", font="Roboto 10")
         else:
-            self.root.confirmation = Label(self.root, text="Sorry, something went wrong...", font="Courier 10")
+            self.root.confirmation = Label(self.root, text="Sorry, something went wrong...", font="Roboto 10")
 
-        self.root.confirmation.grid(row=self.grid_row_start+1, column=1, pady=10)
+        self.root.confirmation.grid(row=self.grid_row_start + 1, column=1, pady=10)
         self.root.extension = None
         self.callback()
 

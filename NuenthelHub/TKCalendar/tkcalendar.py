@@ -1,25 +1,29 @@
 from datetime import datetime
 from functools import partial
-from tkinter import *
+from tkinter import SOLID, CENTER, SUNKEN, NSEW, PhotoImage, DISABLED, NORMAL, FLAT, Tk
+from tkinter.ttk import Frame, Label, Button, Style
 
-from TKCalendar.events.eventdbcontroller import EventController
 from NuenthelHub.TKCalendar.datehandler import DateHandler as dH
 from NuenthelHub.TKCalendar.eventcolor import EventColor
-from supportmodules.modifiedwidgets import HoverButton
-from TKCalendar.toplevels.daytoplevel import DayTopWindow
-from TKCalendar.tkwindowextensions.tk_legend import TKLegend
+from TKCalendar.events.eventdbcontroller import EventController
 from TKCalendar.img.imgpath import image_path
+from TKCalendar.tkwindowextensions.tk_legend import TKLegend
+from TKCalendar.toplevels.daytoplevel import DayTopWindow
+from supportmodules.modifiedwidgets import HoverButton
+
+font = "Roboto "
+button_bg = "#808080"
 
 
 class TKCalendar(Frame):
     """ TKinter Calendar """
 
-    def __init__(self):
+    def __init__(self, root: Frame or Tk, callback: callable = None):
         super().__init__()
 
         """ Window Attributes """
-        # self.minsize(width=700, height=700)
-        # self.title("TK Calendar")
+        self.master = root
+        self.callback = callback
         self.date_buttons = []
         self.toplevel = None
         self.legend = None
@@ -29,6 +33,20 @@ class TKCalendar(Frame):
         self.year = datetime.now().year  # Returns 4-digit int(year)
         self.month = datetime.now().month  # Returns int(month)
         self.dates = []
+
+        """ Styling """
+        self.style = Style(self)
+        self.style.theme_use("clam")
+        self.style.configure("MonthAdjust.TButton", background=button_bg, height=3)
+        self.style.configure("Legend.TButton", relief=FLAT)
+
+        # Add Event Extension Styling
+        self.style.configure("AddMain.TFrame", background="#BDC1BE")
+        self.style.configure("AddExt.TLabel", background="#BDC1BE")
+        self.style.configure("AddCancel.TButton", relief=FLAT, background="#BDC1BE")
+        self.style.configure("ReqInfo.TLabel", background="#BDC1BE", foreground="red")
+        self.style.configure("DkGray.TFrame", background="#D1D6D3")
+        self.style.configure("DkGray.TLabel", background="#D1D6D3", justify=CENTER, anchor=CENTER)
 
         """ Helper Classes """
         self.dh = dH()
@@ -45,34 +63,39 @@ class TKCalendar(Frame):
     def _make_header(self):
         """ Creates calendar header label """
         header_text = f"{self.dh.month_num_to_string(self.month)} {self.year}"
-        self.header = Label(self, text=header_text, font="Arvo 20", justify=CENTER)
-        self.header.grid(row=0, column=1, columnspan=5, sticky=EW, ipady=20)
+        self.header = Label(self, text=header_text, font=font+"20", anchor=CENTER)
+        self.header.grid(row=0, column=2, columnspan=3)
 
         day_list = ["Mon", "Tues", "Wed", "Thurs", "Fri", "Sat", "Sun"]
+
         for i, j in enumerate(day_list):
-            Label(self, text=day_list[i], bd=1, relief=SOLID).grid(row=1, column=i, sticky=NSEW, ipady=20)
+            Label(self, text=day_list[i], relief=SOLID, anchor=CENTER).grid(row=1, column=i, sticky=NSEW, ipady=20)
 
     def _make_month_adjust_buttons(self):
         """ Creates buttons for moving month up or down """
         Button(
-            self, text=">", command=self.month_up, bg="#808080", height=2, width=8).grid(row=0, column=5)
+            self, text=">", command=self.month_up, style="MonthAdjust.TButton", width=8).grid(row=0, column=5)
         Button(
-            self, text="<", command=self.month_down, bg="#808080", height=2, width=8).grid(row=0, column=1)
+            self, text="<", command=self.month_down, style="MonthAdjust.TButton", width=8).grid(row=0, column=1)
 
     def _make_day_buttons(self):
         """ Creates date buttons """
         coords = [(i, j) for i in range(2, 8) for j in range(0, 7)]
         for coord in coords:
             btn = HoverButton(
-                self, bg="gray", relief=SUNKEN, bd=2, height=6, width=10)
+                self, bg="gray", relief=SUNKEN, bd=2, height=4, width=10)
             btn.grid(row=coord[0], column=coord[1], sticky=NSEW)
             self.date_buttons.append(btn)
 
     def _make_legend_button(self):
         """ Creates legend button """
-        self.menu_img = PhotoImage(file=image_path+"menu.png")
-        Button(self, image=self.menu_img, command=self.open_legend, bg="#CAF1DE", height=30,
-               width=30, relief=FLAT).grid(row=0, column=6)
+        self.menu_img = PhotoImage(file=image_path + "menu.png")
+        Button(self, image=self.menu_img, style="Legend.TButton", command=self.open_legend).grid(
+            row=0, column=6, padx=3, pady=3)
+
+    def _make_close_button(self):
+        """Creates widget hide button"""
+        pass
 
     def _configure_header(self):
         """ Set header to display updated month """
@@ -86,7 +109,7 @@ class TKCalendar(Frame):
 
         for i, j in enumerate(self.dates):  # Configure button text to show dates
             if j == 0:
-                self.date_buttons[i].configure(text="", state=DISABLED, bg="#808080")
+                self.date_buttons[i].configure(text="", state=DISABLED, bg=button_bg)
             else:
                 """ We use a partial function here to send day num (j) to our function """
                 self.date_buttons[i].configure(text=j, command=partial(self.day_info, j), bg="white", state=NORMAL)
@@ -109,9 +132,9 @@ class TKCalendar(Frame):
         """ Configures rows and columns to expand with resize of window """
         columns, rows = self.grid_size()
         for columns in range(columns):
-            self.columnconfigure(columns, weight=1)
+            self.columnconfigure(columns, weight=5)
         for rows in range(rows):
-            self.rowconfigure(rows, weight=1)
+            self.rowconfigure(rows, weight=4)
 
     """ ______________________________________Button Functions ________________________________________________"""
 
@@ -149,8 +172,15 @@ class TKCalendar(Frame):
         if self.legend:
             self.legend.main_frame.destroy()
             self.legend = None
-            # self.minsize(width=700, height=700)
             return
 
         self.legend = TKLegend(self)
 
+
+if __name__ == '__main__':
+    x = Tk()
+    frm = Frame(x)
+    frm.pack()
+    cal = TKCalendar(frm)
+    cal.pack()
+    x.mainloop()

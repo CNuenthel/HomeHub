@@ -1,4 +1,5 @@
-from tkinter import Label, Tk, Toplevel, S, Frame, NSEW, PhotoImage, Button, GROOVE, FLAT
+from tkinter import Tk, Toplevel, S, NSEW, PhotoImage, GROOVE
+from tkinter.ttk import Label, Frame, Button
 from TKCalendar.events.eventdbcontroller import EventController
 from TKCalendar.img.imgpath import image_path
 
@@ -43,16 +44,16 @@ class TKRemoveEvent:
 
     def _create_main_frame(self):
         """ Create a frame for add event widgets """
-        self.border_frame = Frame(self.root, bg=self.root["bg"])
+        self.border_frame = Frame(self.root, style="AddMain.TFrame")
         self.border_frame.grid(row=self.grid_row_start, column=0, columnspan=self.column_count, sticky=NSEW)
-        self.main_frame = Frame(self.root, bg="#BDC1BE")
+        self.main_frame = Frame(self.root, style="AddMain.TFrame")
         self.main_frame.grid(row=self.grid_row_start, column=0, columnspan=self.column_count, sticky=NSEW, padx=10,
                              pady=10)
 
     def _make_header(self):
         """ Create Add Event header """
         Label(
-            self.main_frame, text="REMOVE EVENT", font="Courier 18 underline", bg="#BDC1BE") \
+            self.main_frame, text="REMOVE EVENT", font="Courier 18 underline", style="AddExt.TLabel") \
             .grid(row=0, column=1, pady=5, sticky=S)
 
     def _get_event_data(self):
@@ -61,7 +62,7 @@ class TKRemoveEvent:
 
     def _make_data_display(self):
         """ Displays event data in an extension"""
-        event_data_frame = Frame(self.main_frame, bg="#D1D6D3", relief=GROOVE)
+        event_data_frame = Frame(self.main_frame, style="DkGray.TFrame", relief=GROOVE)
         event_data_frame.grid(row=1, column=1, padx=8, pady=8)
         e = self.event
         event_data = f"Title: {e.title}\n" \
@@ -70,21 +71,20 @@ class TKRemoveEvent:
                      f"Category: {e.category}\n" \
                      f"Details: {e.details}" \
 
-        Label(event_data_frame, bg="#D1D6D3", text=event_data, font="Helvetica 12") \
-            .grid(row=0, column=0, ipady=20, ipadx=20)
+        Label(event_data_frame, style="DkGray.TLabel", text=event_data, font="Helvetica 12") \
+            .pack()
 
     def _make_confirm_deny_buttons(self):
         """ Create final add button """
         self.confirm_img = PhotoImage(file=image_path+"confirm.png")
-        self.add = Button(self.main_frame, image=self.confirm_img, command=self._remove_event, relief=FLAT,
-                          bg="#BDC1BE")
+        self.add = Button(self.main_frame, image=self.confirm_img, command=self._remove_event,
+                          style="AddCancel.TButton")
         self.add.image = self.confirm_img
         self.add.grid(row=1, column=0)
 
         """ Create cancel button """
         self.deny_img = PhotoImage(file=image_path+"deny.png")
-        self.deny = Button(self.main_frame, image=self.deny_img, command=self._cancel_event, relief=FLAT,
-                           bg="#BDC1BE")
+        self.deny = Button(self.main_frame, image=self.deny_img, command=self._cancel_event, style="AddCancel.TButton")
         self.deny.image = self.deny_img
         self.deny.grid(row=1, column=2)
 
@@ -117,4 +117,3 @@ class TKRemoveEvent:
         self.root.confirmation.grid(row=6, column=1, pady=10)
         self.root.extension = None
         self.callback()
-
