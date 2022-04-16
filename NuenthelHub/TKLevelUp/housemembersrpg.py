@@ -22,42 +22,32 @@ class HouseMemberRpg(Tk):
 
         """ TTK Configurations """
         self.style = Style()
-        self.style.theme_use("alt")
+        self.style.theme_use("xpnative")
 
         """ Internal Functions """
-        self._make_header()
         self._make_progress_bar()
-        self._make_member_buttons()
-
-    def _make_header(self):
-        """ Creates header frame """
-        self.header_frame = Frame(self)
-        self.header_frame.grid(row=0, column=0, sticky=NSEW)
 
     def _make_progress_bar(self):
         """ Creates progress bars for all members """
         members = self.db.find_all()
 
-        self.pb_frame = LabelFrame(self, text="Cody", labelanchor="nw", relief=GROOVE)
+        s = Style()
+        s.configure("TLabelFrame", font=font+"20")
+        self.pb_frame = LabelFrame(self, text="Cody")
         self.pb_frame.grid(row=1, column=0)
 
-        pb = Progressbar(self.pb_frame, orient="vertical", length=100, mode="determinate")
-        pb.grid(row=0, column=0, padx=10, pady=10)
+        s = Style()
+        s.configure("TProgressbar", background="green", )
+        pb = Progressbar(self.pb_frame, orient="vertical", length=200, mode="determinate")
 
-    def _make_member_buttons(self):
-        self.member_btn_frame = LabelFrame(self, text="Member DB", relief=GROOVE)
-        self.member_btn_frame.grid(row=2, column=0)
+        def progress():
+            if pb['value'] < 100:
+                pb['value'] += 20
 
-        self.add_member_btn = Button(self.member_btn_frame, text="Add Member", command=self._add_member)
-        self.add_member_btn.grid(row=0, column=0)
+        self.btn = Button(self.pb_frame, text="Progress", command=progress)
+        self.btn.grid(row=1, column=0, padx=10, pady=10)
 
-# """ __________________Button Commands _____________________________________________________________________________"""
-
-    def _add_member(self):
-        if not self.extension:
-            self.confirmation.destroy() if self.confirmation else None
-            self.extension = TKAddMemberExtension(self)
-
+        pb.grid(row=0, column=0, padx=25, pady=10)
 
 if __name__ == '__main__':
     x = HouseMemberRpg().mainloop()
