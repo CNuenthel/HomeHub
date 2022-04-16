@@ -2,4 +2,5 @@ chromedriver.exe
 .idea/
 .venv/
 config.json
+image_path.py
 .__pycache__/
