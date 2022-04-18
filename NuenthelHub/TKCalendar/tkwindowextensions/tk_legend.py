@@ -1,4 +1,5 @@
-from tkinter import Tk, Toplevel, Frame, NSEW, Button, FLAT
+from tkinter import Tk, Toplevel, NSEW, FLAT
+from tkinter.ttk import Frame, Button, Style
 
 
 class TKLegend:
@@ -21,7 +22,7 @@ class TKLegend:
 
     def _create_main_frame(self):
         """ Create a frame for add event widgets """
-        self.main_frame = Frame(self.root, bg=self.root["bg"])
+        self.main_frame = Frame(self.root)
         self.main_frame.grid(row=2, column=self.column_count, rowspan=self.grid_row_start, columnspan=2, sticky=NSEW)
 
     def _create_legend_colors(self):
@@ -29,5 +30,7 @@ class TKLegend:
         colors = ["#F7D8BA", "#FEF8DD", "#C6B6D6", "#ACDDDE"]
         categories = ["Cody Works", "Sam Works", "Work Overlap", "Other"]
         for i, j in enumerate(colors):
-            Button(self.main_frame, text=categories[i], bg=j, relief=FLAT).grid(row=i, column=0, sticky=NSEW, pady=25,
+            legend_style = Style()
+            legend_style.configure(f"{j}.TButton", background=j, relief=FLAT)
+            Button(self.main_frame, text=categories[i], style=f"{j}.TButton").grid(row=i, column=0, sticky=NSEW, pady=25,
                                                                                 padx=10)

@@ -25,6 +25,7 @@ class TKCalendar(Frame):
         self.master = root
         self.callback = callback
         self.date_buttons = []
+        self.all_widgets = []
         self.toplevel = None
         self.legend = None
         self.header = None
@@ -52,6 +53,7 @@ class TKCalendar(Frame):
         self.dh = dH()
 
         """ Internal Functions """
+        self._make_main_frame()
         self._make_header()
         self._make_day_buttons()
         self._make_month_adjust_buttons()
@@ -60,42 +62,42 @@ class TKCalendar(Frame):
         self._event_color_buttons()
         self._configure_rows_columns()
 
+    def _make_main_frame(self):
+        self.mf = Frame(self.master)
+        self.mf.pack()
+
     def _make_header(self):
         """ Creates calendar header label """
         header_text = f"{self.dh.month_num_to_string(self.month)} {self.year}"
-        self.header = Label(self, text=header_text, font=font+"20", anchor=CENTER)
+        self.header = Label(self.mf, text=header_text, font=font+"20", anchor=CENTER)
         self.header.grid(row=0, column=2, columnspan=3)
 
         day_list = ["Mon", "Tues", "Wed", "Thurs", "Fri", "Sat", "Sun"]
 
         for i, j in enumerate(day_list):
-            Label(self, text=day_list[i], relief=SOLID, anchor=CENTER).grid(row=1, column=i, sticky=NSEW, ipady=20)
+            Label(self.mf, text=day_list[i], relief=SOLID, anchor=CENTER).grid(row=1, column=i, sticky=NSEW, ipady=20)
 
     def _make_month_adjust_buttons(self):
         """ Creates buttons for moving month up or down """
         Button(
-            self, text=">", command=self.month_up, style="MonthAdjust.TButton", width=8).grid(row=0, column=5)
+            self.mf, text=">", command=self.month_up, style="MonthAdjust.TButton", width=8).grid(row=0, column=5)
         Button(
-            self, text="<", command=self.month_down, style="MonthAdjust.TButton", width=8).grid(row=0, column=1)
+            self.mf, text="<", command=self.month_down, style="MonthAdjust.TButton", width=8).grid(row=0, column=1)
 
     def _make_day_buttons(self):
         """ Creates date buttons """
         coords = [(i, j) for i in range(2, 8) for j in range(0, 7)]
         for coord in coords:
             btn = HoverButton(
-                self, bg="gray", relief=SUNKEN, bd=2, height=4, width=10)
+                self.mf, bg="gray", relief=SUNKEN, bd=2, height=4, width=10)
             btn.grid(row=coord[0], column=coord[1], sticky=NSEW)
             self.date_buttons.append(btn)
 
     def _make_legend_button(self):
         """ Creates legend button """
         self.menu_img = PhotoImage(file=image_path + "menu.png")
-        Button(self, image=self.menu_img, style="Legend.TButton", command=self.open_legend).grid(
+        Button(self.mf, image=self.menu_img, style="Legend.TButton", command=self.open_legend).grid(
             row=0, column=6, padx=3, pady=3)
-
-    def _make_close_button(self):
-        """Creates widget hide button"""
-        pass
 
     def _configure_header(self):
         """ Set header to display updated month """
@@ -174,7 +176,7 @@ class TKCalendar(Frame):
             self.legend = None
             return
 
-        self.legend = TKLegend(self)
+        self.legend = TKLegend(self.mf)
 
 
 if __name__ == '__main__':

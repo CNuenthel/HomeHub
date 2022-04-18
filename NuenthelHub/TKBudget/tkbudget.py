@@ -16,11 +16,12 @@ header_color = "#232323"
 class TKBudget(Frame):
     """ Creates a top level GUI for budget handling """
 
-    def __init__(self):
+    def __init__(self, root: Frame or Tk, callback: callable = None):
         super().__init__()
         """Window Attributes"""
         self.configure(background=bg_color)
-        self.bind_all("<Button-1>", lambda event: event.widget.focus_set())
+        self.master = root
+        self.callback = callback
 
         """External Helper Classes"""
         self.nfsheet = NuenthelSheetsData("N-Fam 2022")
@@ -37,6 +38,7 @@ class TKBudget(Frame):
         self.graph_frame = None
 
         """GUI Constructor Functions"""
+        self._make_main_frame()
         self._make_header()
         self._make_expenses()
         self._make_recent()
@@ -49,17 +51,21 @@ class TKBudget(Frame):
         self._configure_expense_entries()
         self._configure_incomes()
 
+    def _make_main_frame(self):
+        self.mf = Frame(self.master)
+        self.mf.pack()
+
     def _make_header(self):
-        self.header_frame = Frame(self, background=header_color, relief=FLAT)
+        self.header_frame = Frame(self.mf, background=header_color, relief=FLAT)
         self.header_frame.grid(row=0, column=0, columnspan=8, sticky=NSEW)
         self.header_label = Label(self.header_frame, bg=header_color, fg="white", text="Budget",
                                   font=font + "25 underline")
         self.header_label.grid(row=0, column=0, columnspan=1, sticky=NSEW, padx=15)
-        self.darklight_frame = Frame(self, background=header_color, relief=FLAT)
+        self.darklight_frame = Frame(self.mf, background=header_color, relief=FLAT)
         self.darklight_frame.grid(row=1, column=0, columnspan=8, sticky=NSEW)
 
     def _make_expenses(self):
-        self.border_frame = Frame(self, background=border_color, borderwidth=3, relief=GROOVE)
+        self.border_frame = Frame(self.mf, background=border_color, borderwidth=3, relief=GROOVE)
         self.border_frame.grid(row=1, column=0, columnspan=3, rowspan=8, sticky=NSEW, padx=10, pady=10)
         self.expense_frame = Frame(self.border_frame, background=bg_color, borderwidth=3, relief=GROOVE)
         self.expense_frame.grid(row=0, column=0, columnspan=3, rowspan=8, padx=5, pady=5, ipadx=10, ipady=10,
@@ -92,7 +98,7 @@ class TKBudget(Frame):
                     .grid(row=ind, column=2, pady=5, padx=5, sticky=NSEW)
 
     def _make_recent(self):
-        border_frame = Frame(self, background=border_color, borderwidth=3, relief=GROOVE)
+        border_frame = Frame(self.mf, background=border_color, borderwidth=3, relief=GROOVE)
         border_frame.grid(row=1, column=3, columnspan=2, rowspan=8, sticky=NSEW, padx=10, pady=10)
         self.recent_frame = Frame(border_frame, background=bg_color, borderwidth=3, relief=GROOVE)
         self.recent_frame.grid(row=0, column=0, columnspan=2, padx=5, pady=5, ipadx=10, ipady=10, sticky=NSEW)
@@ -108,7 +114,7 @@ class TKBudget(Frame):
             self.recents.append(self.x)
 
     def _make_income(self):
-        border_frame = Frame(self, background=border_color, borderwidth=3, relief=GROOVE)
+        border_frame = Frame(self.mf, background=border_color, borderwidth=3, relief=GROOVE)
         border_frame.grid(row=1, column=5, columnspan=3, rowspan=3, sticky=NSEW, padx=10, pady=10)
         income_frame = Frame(border_frame, background=bg_color, borderwidth=3, relief=GROOVE)
         income_frame.grid(row=0, column=0, columnspan=2, rowspan=3, padx=5, pady=5, ipadx=10, ipady=10, sticky=NSEW)
@@ -134,7 +140,7 @@ class TKBudget(Frame):
         if self.graph_frame is not None:
             self.graph_frame.destroy()
 
-        self.graph_frame = Frame(self, background=border_color, borderwidth=3, relief=GROOVE)
+        self.graph_frame = Frame(self.mf, background=border_color, borderwidth=3, relief=GROOVE)
         self.graph_frame.grid(row=4, column=5, columnspan=3, rowspan=5, sticky=NSEW, padx=10, pady=10)
         self._configure_rows_cols(self.graph_frame)
         figure = ExpensePlot().get_plot()
@@ -163,11 +169,11 @@ class TKBudget(Frame):
         for i, j in enumerate(self.expense_labels):
             if perc_list[i] < 50:
                 j.configure(bg="#ccfdcc")
-            elif 50 < perc_list[i] < 75:
+            elif 50 <= perc_list[i] < 75:
                 j.configure(bg="#F9FDCC")
-            elif 75 < perc_list[i] < 90:
+            elif 75 <= perc_list[i] < 90:
                 j.configure(bg="#FDF1CC")
-            elif perc_list[i] > 90:
+            elif perc_list[i] >= 90:
                 j.configure(bg="#FDD0CC")
 
     def _configure_expense_entries(self):
@@ -232,3 +238,12 @@ class TKBudget(Frame):
             self._configure_recents(str_repr, value)
             self._configure_incomes()
             self._make_graph()
+
+
+if __name__ == '__main__':
+    x = Tk()
+    frm = Frame(x)
+    frm.pack()
+    cal = TKBudget(frm)
+    cal.pack()
+    x.mainloop()
