@@ -60,7 +60,6 @@ class TKChores(Frame):
         self.ch = ChoreHandler()
 
         """ Internal Functions """
-        self._make_main_frame()
         self._make_header()
         self._make_daily_chore_window()
         self._make_weekly_chore_window()
@@ -73,19 +72,15 @@ class TKChores(Frame):
         self._configure_weekly_chores()
         self._configure_monthly_chores()
 
-    def _make_main_frame(self):
-        self.mf = Frame(self.master)
-        self.mf.pack()
-
     def _make_header(self):
         """ Creates dark background header """
-        self.header_frame = Frame(self.mf, style="Header.TFrame", relief=FLAT)
+        self.header_frame = Frame(self, style="Header.TFrame", relief=FLAT)
         self.header_frame.grid(row=0, column=0, columnspan=10, sticky=NSEW)
         self.header_label = Label(self.header_frame, style="Header.TLabel", text="Chores",
                                   font=font + "25 underline")
         self.header_label.grid(row=0, column=0, columnspan=1, padx=15)
 
-        self.add_chore_btn = HoverButton(self.mf, text="Add Chore", command=self._add_chore, relief=GROOVE,
+        self.add_chore_btn = HoverButton(self, text="Add Chore", command=self._add_chore, relief=GROOVE,
                                          bg=header_color, fg="white")
         self.add_chore_btn.grid(row=0, column=6, padx=15, sticky=E)
 
@@ -103,7 +98,7 @@ class TKChores(Frame):
     def _make_daily_chore_window(self):
         """ Makes first chore frame for daily chore information """
 
-        self.daily_border = Frame(self.mf, style="Border.TFrame", borderwidth=3, relief=GROOVE)
+        self.daily_border = Frame(self, style="Border.TFrame", borderwidth=3, relief=GROOVE)
         self.daily_border.grid(row=1, column=0, columnspan=3, sticky=NSEW, padx=5, pady=5)
 
         self.daily_chore_frame = Frame(self.daily_border, style="BG.TFrame", borderwidth=3, relief=GROOVE)
@@ -152,7 +147,7 @@ class TKChores(Frame):
 
     def _make_weekly_chore_window(self):
         """ Makes second chore frame for weekly chore information """
-        self.weekly_border = Frame(self.mf, style="Border.TFrame", borderwidth=3, relief=GROOVE)
+        self.weekly_border = Frame(self, style="Border.TFrame", borderwidth=3, relief=GROOVE)
         self.weekly_border.grid(row=1, column=4, columnspan=3, sticky=NSEW, padx=5, pady=5)
         self.weekly_chore_frame = Frame(self.weekly_border, style="BG.TFrame", borderwidth=3, relief=GROOVE)
         self.weekly_chore_frame.grid(row=0, column=0, columnspan=3, padx=5, pady=5, ipadx=10, ipady=10,
@@ -201,7 +196,7 @@ class TKChores(Frame):
 
     def _make_monthly_chore_window(self):
         """ Makes third chore frame for monthly chore information """
-        self.monthly_border = Frame(self.mf, style="Border.TFrame", borderwidth=3, relief=GROOVE)
+        self.monthly_border = Frame(self, style="Border.TFrame", borderwidth=3, relief=GROOVE)
         self.monthly_border.grid(row=1, column=7, columnspan=3, sticky=NSEW, padx=5, pady=5)
         self.monthly_chore_frame = Frame(self.monthly_border, style="BG.TFrame", borderwidth=3, relief=GROOVE)
         self.monthly_chore_frame.grid(row=0, column=0, columnspan=3, padx=5, pady=5, ipadx=10, ipady=10,
@@ -319,7 +314,7 @@ class TKChores(Frame):
         print(self.extension)
         if not self.extension:
             self.confirmation.destroy() if self.confirmation else None
-            self.extension = TKAddChoreExtension(self.mf, self)
+            self.extension = TKAddChoreExtension(self, self)
 
     def _remove_daily_chore(self, *args):
         title = self.daily_chores[args[0]][0]["text"]

@@ -1,7 +1,4 @@
 """ Shortcut variable for image path, must be set to img file location on movement of the folder """
+import pathlib
 
-# Code Laptop
-image_path = "C:/Users/cnuen/OneDrive/Desktop/Github/HomeHub/NuenthelHub/TKLevelUp/img/"
-
-# Main PC
-# image_path = "Z:/OneDrive/Git/HomeHub/NuenthelHub/TKLevelUp/img/"
+image_path = str(pathlib.Path(__file__).parent.resolve()) + "\\"

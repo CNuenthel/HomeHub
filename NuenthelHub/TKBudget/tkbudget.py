@@ -38,7 +38,6 @@ class TKBudget(Frame):
         self.graph_frame = None
 
         """GUI Constructor Functions"""
-        self._make_main_frame()
         self._make_header()
         self._make_expenses()
         self._make_recent()
@@ -51,21 +50,17 @@ class TKBudget(Frame):
         self._configure_expense_entries()
         self._configure_incomes()
 
-    def _make_main_frame(self):
-        self.mf = Frame(self.master)
-        self.mf.pack()
-
     def _make_header(self):
-        self.header_frame = Frame(self.mf, background=header_color, relief=FLAT)
+        self.header_frame = Frame(self, background=header_color, relief=FLAT)
         self.header_frame.grid(row=0, column=0, columnspan=8, sticky=NSEW)
         self.header_label = Label(self.header_frame, bg=header_color, fg="white", text="Budget",
                                   font=font + "25 underline")
         self.header_label.grid(row=0, column=0, columnspan=1, sticky=NSEW, padx=15)
-        self.darklight_frame = Frame(self.mf, background=header_color, relief=FLAT)
+        self.darklight_frame = Frame(self, background=header_color, relief=FLAT)
         self.darklight_frame.grid(row=1, column=0, columnspan=8, sticky=NSEW)
 
     def _make_expenses(self):
-        self.border_frame = Frame(self.mf, background=border_color, borderwidth=3, relief=GROOVE)
+        self.border_frame = Frame(self, background=border_color, borderwidth=3, relief=GROOVE)
         self.border_frame.grid(row=1, column=0, columnspan=3, rowspan=8, sticky=NSEW, padx=10, pady=10)
         self.expense_frame = Frame(self.border_frame, background=bg_color, borderwidth=3, relief=GROOVE)
         self.expense_frame.grid(row=0, column=0, columnspan=3, rowspan=8, padx=5, pady=5, ipadx=10, ipady=10,
@@ -98,7 +93,7 @@ class TKBudget(Frame):
                     .grid(row=ind, column=2, pady=5, padx=5, sticky=NSEW)
 
     def _make_recent(self):
-        border_frame = Frame(self.mf, background=border_color, borderwidth=3, relief=GROOVE)
+        border_frame = Frame(self, background=border_color, borderwidth=3, relief=GROOVE)
         border_frame.grid(row=1, column=3, columnspan=2, rowspan=8, sticky=NSEW, padx=10, pady=10)
         self.recent_frame = Frame(border_frame, background=bg_color, borderwidth=3, relief=GROOVE)
         self.recent_frame.grid(row=0, column=0, columnspan=2, padx=5, pady=5, ipadx=10, ipady=10, sticky=NSEW)
@@ -114,7 +109,7 @@ class TKBudget(Frame):
             self.recents.append(self.x)
 
     def _make_income(self):
-        border_frame = Frame(self.mf, background=border_color, borderwidth=3, relief=GROOVE)
+        border_frame = Frame(self, background=border_color, borderwidth=3, relief=GROOVE)
         border_frame.grid(row=1, column=5, columnspan=3, rowspan=3, sticky=NSEW, padx=10, pady=10)
         income_frame = Frame(border_frame, background=bg_color, borderwidth=3, relief=GROOVE)
         income_frame.grid(row=0, column=0, columnspan=2, rowspan=3, padx=5, pady=5, ipadx=10, ipady=10, sticky=NSEW)
@@ -126,9 +121,9 @@ class TKBudget(Frame):
         for i, j in enumerate(labels):
             Label(income_frame, text=j, font=font + "12 bold", bg=bg_color).grid(row=i, column=0, pady=5, padx=5,
                                                                                  sticky=NSEW)
-            x = SnapbackEntry(income_frame, font=font + "9 italic", justify=CENTER)
-            x.grid(row=i, column=1, pady=5, padx=5, sticky=NSEW)
-            self.income_entries.append(x)
+            se = SnapbackEntry(income_frame, font=font + "9 italic", justify=CENTER)
+            se.grid(row=i, column=1, pady=5, padx=5, sticky=NSEW)
+            self.income_entries.append(se)
 
         commands = [partial(self.cumulate_income, i) for i in range(3)]
         for ind, ja in enumerate(commands):
@@ -140,7 +135,7 @@ class TKBudget(Frame):
         if self.graph_frame is not None:
             self.graph_frame.destroy()
 
-        self.graph_frame = Frame(self.mf, background=border_color, borderwidth=3, relief=GROOVE)
+        self.graph_frame = Frame(self, background=border_color, borderwidth=3, relief=GROOVE)
         self.graph_frame.grid(row=4, column=5, columnspan=3, rowspan=5, sticky=NSEW, padx=10, pady=10)
         self._configure_rows_cols(self.graph_frame)
         figure = ExpensePlot().get_plot()

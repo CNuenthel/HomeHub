@@ -1,0 +1,6 @@
+rows = self.grid_size()[0]
+cols = self.grid_size()[1]
+for i in range(cols):
+    Label(self, text=i).grid(row=i, column=10)
+for j in range(rows):
+    Label(self, text=j).grid(row=10, column=j)
