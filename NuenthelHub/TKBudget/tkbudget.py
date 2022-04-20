@@ -1,5 +1,5 @@
 from functools import partial
-from tkinter import *
+from tkinter import Frame, Tk, NSEW, CENTER, FLAT, Label, GROOVE, W, EW, BOTH, END
 
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
@@ -140,7 +140,7 @@ class TKBudget(Frame):
         self._configure_rows_cols(self.graph_frame)
         figure = ExpensePlot().get_plot()
         bar_graph = FigureCanvasTkAgg(figure, self.graph_frame)
-        bar_graph.get_tk_widget().pack(padx=10, pady=10)
+        bar_graph.get_tk_widget().pack(padx=10, pady=10, expand=True, fill=BOTH)
 
     # """_______________These configurations are specific to my family budget sheet__________________________________"""
 

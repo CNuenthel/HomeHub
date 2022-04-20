@@ -40,6 +40,7 @@ class TKCalendar(Frame):
         self.style.theme_use("clam")
         self.style.configure("MonthAdjust.TButton", background=button_bg, height=3)
         self.style.configure("Legend.TButton", relief=FLAT)
+        self.style.configure("TFrame", highlightthickness=2, highlightcolor="black")
 
         # Add Event Extension Styling
         self.style.configure("AddMain.TFrame", background="#BDC1BE")
