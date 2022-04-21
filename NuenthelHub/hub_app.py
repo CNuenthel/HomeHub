@@ -14,7 +14,7 @@ class NuenthelHub(Tk):
         self.configure(bg="#add8e6")
         self.style.theme_use("xpnative")
         self.resizable(True, True)
-        self.attributes("-fullscreen", True)
+        # self.attributes("-fullscreen", True)
 
         """ Styling """
 

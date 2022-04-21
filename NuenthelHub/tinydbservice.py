@@ -1,4 +1,3 @@
-from __future__ import annotations
 from tinydb import TinyDB, Query
 from typing import TypeVar, Generic, Type, List
 

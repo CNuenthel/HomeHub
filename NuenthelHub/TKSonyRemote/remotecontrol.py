@@ -50,7 +50,8 @@ class RemoteControl:
 
     def get_current_volume(self) -> int:
         """Returns current volume value"""
-        return self.rc.get_volume_info()["volume"]
+        if self.get_power_status() == "active":
+            return self.rc.get_volume_info()["volume"]
 
     def get_power_stats(self) -> str:
         return self.rc.get_power_status()
@@ -68,3 +69,28 @@ class RemoteControl:
     def toggle_pause(self):
         """Pauses current app on TV or plays if currently paused"""
         self.rc.media_pause()
+
+    def open_app(self, app_name):
+        """Opens desired app"""
+        self.rc.start_app(app_name)
+
+    def nav_up(self):
+        """Mimics direction button press up"""
+        self.rc.send_command("up")
+
+    def nav_down(self):
+        """Mimics direction button press down"""
+        self.rc.send_command("down")
+
+    def nav_left(self):
+        """Mimics direction button press left"""
+        self.rc.send_command("left")
+
+    def nav_right(self):
+        """Mimics direction button press right"""
+        self.rc.send_command("right")
+
+    def confirm(self):
+        """Mimics confirmation button press"""
+        self.rc.send_command("confirm")
+
