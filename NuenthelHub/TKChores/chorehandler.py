@@ -1,8 +1,6 @@
 from NuenthelHub.TKChores.chores.choredbcontroller import ChoreController
 from NuenthelHub.TKChores.chores.chore import Chore
 from datetime import datetime, timedelta
-from random import choices
-from math import ceil
 
 
 class ChoreHandler:
@@ -32,18 +30,13 @@ class ChoreHandler:
         self.months_left = 12 - datetime.now().month
 
     def get_dailies(self):
-        uncompleted_chores = [chore for chore in self.daily_chores if not chore["complete"]]
-        return uncompleted_chores
+        return self.daily_chores
 
     def select_weekly_chores(self):
-        uncompleted_chores = [chore for chore in self.weekly_chores if not chore["complete"]]
-        chore_number = ceil(len(uncompleted_chores)/self.days_left)
-        return choices(uncompleted_chores, k=chore_number)
+        return self.weekly_chores
 
     def select_monthly_chores(self):
-        uncompleted_chores = [chore for chore in self.monthly_chores if not chore["complete"]]
-        chore_number = ceil(len(uncompleted_chores)/self.months_left)
-        return choices(uncompleted_chores, k=chore_number)
+        return self.monthly_chores
 
     def reset_daily_chores(self):
         daily_chores = self.db.find_by_element("category", "Daily")
@@ -63,6 +56,4 @@ class ChoreHandler:
 
 if __name__ == '__main__':
     x = ChoreHandler()
-    x.reset_daily_chores()
-    x.reset_weekly_chores()
-    x.reset_monthly_chores()
+    print(x.select_weekly_chores())

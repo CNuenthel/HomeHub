@@ -15,12 +15,12 @@ subtle_green = "#ccfdcc"
 
 
 class TKAddChoreExtension:
-    def __init__(self, root_frame: Frame, root_window: Frame or Tk):
+    def __init__(self, root_frame: Frame, callback: callable):
         """ Extension Attributes """
         self.root = root_frame
-        self.main = root_window
         self.grid_row_start = root_frame.grid_size()[1]
         self.column_count = root_frame.grid_size()[0]
+        self.callback = callback
 
         """ DB Handler """
         self.db = ChoreController
@@ -78,6 +78,7 @@ class TKAddChoreExtension:
 
     def _add_chore(self):
         """ Add event to DB """
+        print("adding")
         name = self.title_entry.get()
         category = self.category_selector.get()
 
@@ -94,13 +95,14 @@ class TKAddChoreExtension:
             self.main_frame.destroy()
 
             if self.db.insert(chore, force=True):
-                self.main.confirmation = Label(self.root, text="Chore Added!", font="Courier 10", justify=CENTER)
+                self.root.confirmation = Label(self.root, text="Chore Added!", font="Courier 10", justify=CENTER)
             else:
-                self.main.confirmation = Label(self.root, text="Sorry, something went wrong...", font="Courier 10",
+                self.root.confirmation = Label(self.root, text="Sorry, something went wrong...", font="Courier 10",
                                                justify=CENTER)
 
-            self.main.confirmation.grid(row=self.grid_row_start + 1, column=0, columnspan=self.column_count, pady=10)
-            self.main.extension = None
+            self.root.confirmation.grid(row=self.grid_row_start + 1, column=0, columnspan=self.column_count, pady=10)
+            self.root.extension = None
+            self.callback(category.lower())
 
     def _cancel_event(self):
         """ Destroy add event extension """

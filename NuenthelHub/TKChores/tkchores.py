@@ -53,9 +53,9 @@ class TKChores(Frame):
         # OptionMenu
         self.style.configure("Person.TOptionMenu", width=15, bg=bg_color, highlightthickness=0, relief=GROOVE)
         # Buttons
-        self.style.configure("Green.TButton", highlightcolor=subtle_green, relief=GROOVE, width=15, background=bg_color,
-                             state=DISABLED)
+        self.style.configure("Green.TButton", highlightcolor=subtle_green, relief=GROOVE, width=15, background=bg_color)
         self.style.configure("Rmv.TButton", background=bg_color, relief=FLAT)
+
         """ Supporting Classes"""
         self.ch = ChoreHandler()
 
@@ -114,8 +114,13 @@ class TKChores(Frame):
             for i, chore in enumerate(dailies):
                 self.daily_count += 1
 
+                if chore["complete"]:
+                    lbl_style = "Grn.TLabel"
+                else:
+                    lbl_style = "Red.TLabel"
+
                 # Labels
-                lbl = Label(self.daily_chore_frame, text=chore["name"], font=font + "12", style="Red.TLabel",
+                lbl = Label(self.daily_chore_frame, text=chore["name"], font=font + "12", style=lbl_style,
                             relief=GROOVE,
                             width=15)
 
@@ -158,12 +163,18 @@ class TKChores(Frame):
 
     def _configure_weekly_chores(self):
         weeklies = self.ch.select_weekly_chores()
+        print(weeklies)
         if weeklies:
             for i, chore in enumerate(weeklies):
                 self.weekly_count += 1
 
+                if chore["complete"]:
+                    lbl_style = "Grn.TLabel"
+                else:
+                    lbl_style = "Red.TLabel"
+
                 # Label
-                lbl = Label(self.weekly_chore_frame, text=chore["name"], font=font + "12", style="Red.TLabel",
+                lbl = Label(self.weekly_chore_frame, text=chore["name"], font=font + "12", style=lbl_style,
                             relief=GROOVE,
                             width=15)
 
@@ -211,8 +222,13 @@ class TKChores(Frame):
             for i, chore in enumerate(monthlies):
                 self.monthly_count += 1
 
+                if chore["complete"]:
+                    lbl_style = "Grn.TLabel"
+                else:
+                    lbl_style = "Red.TLabel"
+
                 # Label
-                lbl = Label(self.monthly_chore_frame, text=chore["name"], font=font + "12", style="Red.TLabel",
+                lbl = Label(self.monthly_chore_frame, text=chore["name"], font=font + "12", style=lbl_style,
                             relief=GROOVE, width=15)
 
                 # Option Menu - complete by
@@ -314,7 +330,7 @@ class TKChores(Frame):
         print(self.extension)
         if not self.extension:
             self.confirmation.destroy() if self.confirmation else None
-            self.extension = TKAddChoreExtension(self, self)
+            self.extension = TKAddChoreExtension(self, self._configure_callback)
 
     def _remove_daily_chore(self, *args):
         title = self.daily_chores[args[0]][0]["text"]
@@ -337,6 +353,15 @@ class TKChores(Frame):
         ChoreController.remove_doc(chore_id)
         for widget in self.monthly_chores[args[0]][:-1]:
             widget.destroy()
+
+    def _configure_callback(self, category: str):
+        if category == "daily":
+            self._configure_daily_chores()
+        elif category == "weekly":
+            self._configure_weekly_chores()
+        elif category == "monthly":
+            self._configure_monthly_chores()
+
 
 
 if __name__ == '__main__':

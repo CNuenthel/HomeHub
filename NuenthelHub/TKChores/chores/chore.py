@@ -1,5 +1,5 @@
 """
-Module to hold the Chore model
+Chore Model
 """
 
 

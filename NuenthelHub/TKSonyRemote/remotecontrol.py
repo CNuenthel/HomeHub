@@ -23,7 +23,12 @@ class RemoteControl:
         self._connect()
 
     def _connect(self) -> bool:
-        """Creates an instance connection between app and TV"""
+        """
+        Creates an instance connection between app and TV
+
+        First time connection requires device registration, set tv.pin to pin displayed on tv
+        and rerun connection to successfully register
+        """
         self.is_connected = self.rc.connect(self.tv.pin, "N-Fam Hub", "N-Fam Hub")
         return self.is_connected
 
@@ -74,23 +79,20 @@ class RemoteControl:
         """Opens desired app"""
         self.rc.start_app(app_name)
 
-    def nav_up(self):
-        """Mimics direction button press up"""
-        self.rc.send_command("up")
+    def nav_command(self, command: str):
+        """Looks up and sends IRCC command through HTTP"""
+        ircc_dict = {
+            "up": "AAAAAQAAAAEAAAB0Aw==",
+            "down": "AAAAAQAAAAEAAAB1Aw==",
+            "left": "AAAAAQAAAAEAAAA0Aw==",
+            "right": "AAAAAQAAAAEAAAAzAw==",
+            "confirm": "AAAAAQAAAAEAAABlAw==",
+            "home": "AAAAAQAAAAEAAABgAw==",
+            "back": "AAAAAQAAAAEAAABgAw=="
+        }
 
-    def nav_down(self):
-        """Mimics direction button press down"""
-        self.rc.send_command("down")
-
-    def nav_left(self):
-        """Mimics direction button press left"""
-        self.rc.send_command("left")
-
-    def nav_right(self):
-        """Mimics direction button press right"""
-        self.rc.send_command("right")
-
-    def confirm(self):
-        """Mimics confirmation button press"""
-        self.rc.send_command("confirm")
+        if command in ircc_dict.keys():
+            self.rc.send_req_ircc(ircc_dict[command])
+        else:
+            raise KeyError(f"{command} not found in command dictionary")
 
