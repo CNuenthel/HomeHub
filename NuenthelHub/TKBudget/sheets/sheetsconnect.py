@@ -2,12 +2,9 @@
 Authenticates app with Google Sheets, Google Drive
 
 """
-from socket import socket
-
 import gspread
 import pathlib
 import typing
-from socket import gaierror
 
 Pathlike = typing.Union[str, pathlib.Path]
 
@@ -27,7 +24,7 @@ class SheetsConnector:
         Windows: %APPDATA%\gspread\service_account.json.
 
         This allows opening without filename requirement, service_account credentials may also
-        be opened by path
+        be opened by path - see sheetcreds.py for sheets by path connection
         """
         try:
             result = gspread.service_account(scopes=self.scope)

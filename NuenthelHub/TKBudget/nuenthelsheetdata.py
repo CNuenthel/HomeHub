@@ -47,9 +47,9 @@ class NuenthelSheetsData:
         """ Returns value of total monthly bugdet funding """
         return self.ss.get_cell_value("C61")
 
-    def get_cell_dollar_data(self, alphanum_cell_coord):
+    def get_cell_dollar_data(self, alphanum_cell_coord: str) -> str:
         """ Gets cell data from a dollar formatted cell, returns $0.00 if empty cell
-        @:param cell Dollar formatted cell alphanumeric coordinate
+        :param cell Dollar formatted cell alphanumeric coordinate
         """
         cell_value = self.ss.get_cell_value(alphanum_cell_coord)
         if not cell_value:

@@ -1,0 +1,16 @@
+{
+  "_default": {
+    "1": {
+      "name": "Cody",
+      "xp": 0,
+      "level": 0,
+      "color": "green"
+    },
+    "2": {
+      "name": "Sam",
+      "xp": 0,
+      "level": 0,
+      "color": "blue"
+    }
+  }
+}

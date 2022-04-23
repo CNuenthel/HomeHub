@@ -11,6 +11,7 @@ class Member:
     xp: int = 0
     level: int = 0
     color: str = "green"
+    id: int = None
 
     def __repr__(self):
         return str(self.__dict__)
