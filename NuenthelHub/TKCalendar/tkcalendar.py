@@ -1,15 +1,14 @@
 from datetime import datetime
 from functools import partial
-from tkinter import SOLID, CENTER, SUNKEN, NSEW, PhotoImage, DISABLED, NORMAL, FLAT, Tk, BOTH
+from tkinter import SOLID, CENTER, SUNKEN, NSEW, DISABLED, NORMAL, FLAT, Tk
 from tkinter.ttk import Frame, Label, Button, Style
 
 from NuenthelHub.TKCalendar.datehandler import DateHandler as dH
 from NuenthelHub.TKCalendar.eventcolor import EventColor
-from TKCalendar.events.eventdbcontroller import EventController
-from TKCalendar.img.imgpath import image_path
-from TKCalendar.tkwindowextensions.tk_legend import TKLegend
-from TKCalendar.toplevels.daytoplevel import DayTopWindow
-from supportmodules.modifiedwidgets import HoverButton
+from NuenthelHub.TKCalendar.event import EventController
+from NuenthelHub.TKCalendar.tkcalendar_ext import TKLegend
+from NuenthelHub.TKCalendar.daytoplevel import DayTopWindow
+from NuenthelHub.supportmodules.modifiedwidgets import HoverButton
 
 font = "Roboto "
 button_bg = "#808080"
@@ -28,7 +27,7 @@ class TKCalendar(Frame):
         self.all_widgets = []
         self.toplevel = None
         self.legend = None
-        self.header = None
+        self.month_lbl = None
 
         """ Functional Variables """
         self.year = datetime.now().year  # Returns 4-digit int(year)
@@ -37,71 +36,78 @@ class TKCalendar(Frame):
 
         """ Styling """
         self.style = Style(self)
-        self.style.theme_use("clam")
+        self.style.theme_use("alt")
         self.style.configure("MonthAdjust.TButton", background=button_bg, height=3)
         self.style.configure("Legend.TButton", relief=FLAT)
-        self.style.configure("TFrame", highlightthickness=2, highlightcolor="black")
 
         # Add Event Extension Styling
-        self.style.configure("AddMain.TFrame", background="#BDC1BE")
-        self.style.configure("AddExt.TLabel", background="#BDC1BE")
         self.style.configure("AddCancel.TButton", relief=FLAT, background="#BDC1BE")
-        self.style.configure("ReqInfo.TLabel", background="#BDC1BE", foreground="red")
-        self.style.configure("DkGray.TFrame", background="#D1D6D3")
-        self.style.configure("DkGray.TLabel", background="#D1D6D3", justify=CENTER, anchor=CENTER)
+        self.style.configure("Wkdy.TLabel", background="#ADD8E6", relief=SUNKEN)
+        self.style.configure("HF.TFrame", background="white")
+        self.style.configure("Month.TLabel", background="white")
+        self.style.configure("TFrame", background="white")
 
         """ Helper Classes """
         self.dh = dH()
 
         """ Internal Functions """
-        self._make_header()
+        self._make_header_frame()
+        self._make_month_head()
+        self._make_weekday_frame()
+        self._make_weekday_heads()
+        self._make_day_frame()
         self._make_day_buttons()
-        self._make_month_adjust_buttons()
-        self._make_legend_button()
+        self._configure_header()
         self._configure_day_buttons()
-        self._event_color_buttons()
-        self._configure_rows_columns(self)
+        self._row_col_configure(self, 1)
+        self._row_col_configure(self.header_frame, 1)
+        self._row_col_configure(self.weekday_frame, 1)
+        self._row_col_configure(self.day_frame, 1)
 
-    def _make_header(self):
+    def _make_header_frame(self):
+        """ Create frame for header affixed to main window """
+        self.header_frame = Frame(self, style="HF.TFrame")
+        self.header_frame.grid(row=0, column=0, sticky=NSEW)
+
+    def _make_month_head(self):
         """ Creates calendar header label """
-        header_text = f"{self.dh.month_num_to_string(self.month)} {self.year}"
-        self.header = Label(self, text=header_text, font=font+"20", anchor=CENTER)
-        self.header.columnconfigure(0, weight=1)
-        self.header.grid(row=0, column=2, columnspan=3)
+        self.month_lbl = Label(self.header_frame, text="", font=font + "20", anchor=CENTER, style="Month.TLabel")
+        self.month_lbl.grid(row=0, column=1, sticky=NSEW, pady=10)
 
+        Button(
+            self.header_frame, text="<", command=self.month_up, style="MonthAdjust.TButton", width=8)\
+            .grid(row=0, column=0, pady=10)
+        Button(
+            self.header_frame, text=">", command=self.month_down, style="MonthAdjust.TButton", width=8)\
+            .grid(row=0, column=2, pady=10)
+
+    def _make_weekday_frame(self):
+        """ Create frame for day headers """
+        self.weekday_frame = Frame(self)
+        self.weekday_frame.grid(row=1, column=0, sticky=NSEW)
+
+    def _make_weekday_heads(self):
         day_list = ["Mon", "Tues", "Wed", "Thurs", "Fri", "Sat", "Sun"]
-
         """ Builds heading day names """
         for i, j in enumerate(day_list):
-            lbl = Label(self, text=day_list[i], relief=SOLID, anchor=CENTER)
-            lbl.grid(row=1, column=i, sticky=NSEW, ipady=20)
-            lbl.columnconfigure(i, weight=1)
+            Label(self.weekday_frame, text=day_list[i], style="Wkdy.TLabel", anchor=CENTER, width=10) \
+                .grid(row=0, column=i, sticky=NSEW)
 
-    def _make_month_adjust_buttons(self):
-        """ Creates buttons for moving month up or down """
-        Button(
-            self, text=">", command=self.month_up, style="MonthAdjust.TButton", width=8).grid(row=0, column=5)
-        Button(
-            self, text="<", command=self.month_down, style="MonthAdjust.TButton", width=8).grid(row=0, column=1)
+    def _make_day_frame(self):
+        self.day_frame = Frame(self)
+        self.day_frame.grid(row=2, column=0, sticky=NSEW)
 
     def _make_day_buttons(self):
         """ Creates date buttons """
-        coords = [(i, j) for i in range(2, 8) for j in range(0, 7)]
-        for coord in coords:
+        for coord in [(i, j) for i in range(0, 6) for j in range(0, 7)]:
             btn = HoverButton(
-                self, bg="gray", relief=SUNKEN, bd=2, height=4, width=10)
-            btn.grid(row=coord[0], column=coord[1], sticky='nsew')
+                self.day_frame, bg="gray", relief=SUNKEN, height=4, width=10)
+            btn.grid(row=coord[0], column=coord[1], sticky="nsew")
             self.date_buttons.append(btn)
-
-    def _make_legend_button(self):
-        """ Creates legend button """
-        self.menu_img = PhotoImage(file=image_path + "menu.png")
-        Button(self, image=self.menu_img, style="Legend.TButton", command=self.open_legend).grid(
-            row=0, column=6, padx=3, pady=3)
 
     def _configure_header(self):
         """ Set header to display updated month """
-        self.header.configure(text=f"{self.dh.month_num_to_string(self.month)} {self.year}")
+        self.month_lbl.configure(text=f"{self.dh.month_num_to_string(self.month)} {self.year}")
 
     def _configure_day_buttons(self):
         """ Set button text to date numbers """
@@ -130,13 +136,13 @@ class TKCalendar(Frame):
                     categories = [event.category for event in date_events]
                     EventColor().colorize(button, categories)
 
-    def _configure_rows_columns(self, grid_master=None):
-        """ Configures rows and columns to expand with resize of window """
-        columns, rows = grid_master.grid_size()
-        for columns in range(columns):
-            self.columnconfigure(columns, weight=1)
-        for rows in range(rows):
-            self.rowconfigure(rows, weight=1)
+    @staticmethod
+    def _row_col_configure(master: Tk or Frame, weight: int, col_index: int = 0, row_index: int = 0):
+        columns, rows = master.grid_size()
+        for i in range(col_index, columns):
+            master.columnconfigure(i, weight=weight)
+        for i in range(row_index, rows):
+            master.rowconfigure(i, weight=weight)
 
     """ ______________________________________Button Functions ________________________________________________"""
 

@@ -15,8 +15,8 @@ class HouseMemberXPBar(Progressbar):
         self.db = MemberController
 
         """ TTK Configurations """
-        self.style = Style()
-        self.style.theme_use("xpnative")
+        # self.style = Style(self)
+        # self.style.theme_use("xpnative")
 
     def add_xp(self, value, member: Member):
         self.member.xp += value
