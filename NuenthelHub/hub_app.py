@@ -56,8 +56,8 @@ class RootGUI:
             self.connection_frame, text=self.tv_connected, style="Tv.TButton", state="disabled")
         self.tv_connected_btn.grid(row=0, column=0, padx=10, pady=10, sticky=NSEW)
 
-        self.sheets_connected_btn = Button(self.connection_frame, text=f"Sheets {self.sheets_connected}",
-                                           style="Sheets.TButton", state="disabled")
+        self.sheets_connected_btn = Button(
+            self.connection_frame, text=f"Sheets {self.budget_connected}", style="Sheets.TButton", state="disabled")
         self.sheets_connected_btn.grid(row=0, column=1, padx=10, pady=10, sticky=NSEW)
 
 
@@ -127,28 +127,11 @@ class MainPage:
 # _____________ Button Commands ________________________________________________________________________________________
 
     def show_calendar(self):
-        self.main_btn_frame.grid_forget()
-        self._create_sinker_frame()
-        self._create_sidebar_frame()
-
-
-        tk_cal = tkcalendar.TKCalendar(self.sinker_frame, self.sidebar_frame, master=self.sinker_frame)
-
-        for button in tk_cal.tkcal_sidebar_buttons(self.sidebar_frame):
-            button.pack()
-
-        tk_cal.grid(row=0, column=0, padx=20, pady=20, sticky=NSEW)
-        self._row_col_configure(self.sinker_frame, 1)
-
-    def return_to_main(self):
-        self.sinker_frame.grid_forget()
-        self.sidebar_frame.grid_forget()
-        self.main_btn_frame.grid(row=1, column=0, padx=10, pady=10, sticky=NSEW)
+        print("Button Pushed")
 
 
 if __name__ == '__main__':
-
-    root = Tk()
+    root = RootGUI()
     main_page = MainPage(root)
 
-    root.mainloop()
+    root.master.mainloop()
