@@ -26,6 +26,7 @@ class TinyDbService(Generic[T]):
         """ Instantiate db and model """
         self.db = db
         self.modelClass = modelClass
+        self.logs = []
 
     def find_all(self):
         """Fetch all documents from tinydb"""

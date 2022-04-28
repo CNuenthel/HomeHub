@@ -1,12 +1,19 @@
+"""
+Scraper module to access NDHP Intranet webapp
+
+chromedriver.exe required to be present in root folder of matching Chrome
+version number.
+"""
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from datetime import datetime
-from TKCalendar.events.eventdbcontroller import EventController
-from TKCalendar.events.events import Event
+from NuenthelHub.TKCalendar.event import EventController
+from NuenthelHub.TKCalendar.event import Event
 import json
 
-with open("C:/Users/cnuen/OneDrive/Desktop/Github/HomeHub/NuenthelHub/config.json", "r") as f:
+"""Login Information for NDHP Intranet"""
+with open("C:/Users/cnuen/OneDrive/Documents/GitHub/HomeHub/NuenthelHub/config.json", "r") as f:
     config = json.load(f)
 
 

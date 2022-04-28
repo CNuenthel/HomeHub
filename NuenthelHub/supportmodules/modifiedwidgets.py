@@ -2,53 +2,8 @@
 Contains modified Tkinter widgets.
 """
 import platform
-from tkinter import Button, Tk, Toplevel, Label, Entry, END, IntVar, Canvas, Scrollbar
-from tkinter.ttk import Combobox, Style, Frame, Checkbutton, Separator
-
-
-class HoverButton(Button):
-    """
-    Creates a Tkinter button with hover highlighting
-
-    Parameters:
-        master:
-            Root window in which button will be created
-        **kw:
-            Standard keyword arguments to the Tkinter button
-    """
-
-    def __init__(self, master: Tk or Toplevel, **kw):
-        super().__init__(master=master, **kw)
-        self.default_background = None
-        self.active_bg = "#D9F1FF"
-        self.default_foreground = None
-        self.bind("<Enter>", self.on_enter)
-        self.bind("<Leave>", self.on_leave)
-
-    def on_enter(self, e):
-        """
-        Sets default bg and changes bg to active color on mouse entry to widget
-
-        Parameters:
-            e:
-                Unused, houses bind event callback, required positional for some reason
-        """
-        self.default_background = self["background"]
-        if self.default_background != "#808080":  # Here we use #808080 as a standard "inactive" color
-            self["background"] = self.active_bg
-            self.default_foreground = self["fg"]
-            self["foreground"] = "black"
-
-    def on_leave(self, e):
-        """
-        Returns default bg on mouse exit of widget
-
-        Parameters:
-            e:
-                Unused, houses bind event callback, required positional for some reason
-        """
-        self["background"] = self.default_background
-        self["fg"] = self.default_foreground
+from tkinter import Tk, Toplevel, END, IntVar, Canvas
+from tkinter.ttk import Combobox, Style, Frame, Checkbutton, Separator, Button, Label, Entry, Scrollbar
 
 
 class HoverLabel(Label):

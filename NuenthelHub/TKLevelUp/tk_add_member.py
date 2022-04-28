@@ -1,7 +1,7 @@
 from tkinter import Label, Tk, Toplevel, Frame, NSEW, PhotoImage, Button, CENTER, FLAT
-from tkinter.ttk import Combobox, Style
+from tkinter.ttk import Style
 from tkinter.colorchooser import askcolor
-from NuenthelHub.TKLevelUp.members.member import Member
+from TKLevelUp.member import Member
 from NuenthelHub.TKLevelUp.members.memberdbcontroller import MemberController
 from NuenthelHub.supportmodules.modifiedwidgets import TextFilledEntry
 from NuenthelHub.TKLevelUp.img.image_path import image_path

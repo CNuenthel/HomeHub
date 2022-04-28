@@ -6,7 +6,6 @@ from NuenthelHub.TKChores.chorehandler import ChoreHandler
 from NuenthelHub.TKChores.chores.choredbcontroller import ChoreController
 from NuenthelHub.TKChores.img.image_path import image_path
 from NuenthelHub.TKChores.tkwindowextensions.tk_add_chore import TKAddChoreExtension
-from NuenthelHub.supportmodules.modifiedwidgets import HoverButton
 
 bg_color = "#909090"
 border_color = "#9594B7"
@@ -80,8 +79,8 @@ class TKChores(Frame):
                                   font=font + "25 underline")
         self.header_label.grid(row=0, column=0, columnspan=1, padx=15)
 
-        self.add_chore_btn = HoverButton(self, text="Add Chore", command=self._add_chore, relief=GROOVE,
-                                         bg=header_color, fg="white")
+        self.add_chore_btn = Button(self, text="Add Chore", command=self._add_chore, relief=GROOVE,
+                                    bg=header_color, fg="white")
         self.add_chore_btn.grid(row=0, column=6, padx=15, sticky=E)
 
         self._configure_rows_cols(self.header_frame)

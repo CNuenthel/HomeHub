@@ -5,7 +5,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 from TKBudget.expenseplot import ExpensePlot
 from TKBudget.nuenthelsheetdata import NuenthelSheetsData
-from supportmodules.modifiedwidgets import HoverButton, HoverLabel, SnapbackEntry
+from supportmodules.modifiedwidgets import HoverLabel, SnapbackEntry
 
 bg_color = "#909090"
 border_color = "#9594B7"
@@ -71,7 +71,7 @@ class TKBudget(Frame):
 
         Label(self.expense_frame, text="Expenses", font=font + "15", bg="#909090").grid(row=0, column=0, padx=5, pady=5,
                                                                                         sticky=W)
-        HoverButton(self.expense_frame, text="Update", command=self._configure_expense_entries, relief=GROOVE, width=25,
+        Button(self.expense_frame, text="Update", command=self._configure_expense_entries, relief=GROOVE, width=25,
                     bg=header_color, fg="white") \
             .grid(row=0, column=1, columnspan=1)
 
@@ -89,7 +89,7 @@ class TKBudget(Frame):
             # This allows for cross list indexing to match buttons to entries
             commands = [partial(self.cumulate_expense, i) for i in range(7)]
             for ind, ja in enumerate(commands, 1):
-                HoverButton(self.expense_frame, text="+", command=ja, relief=FLAT, bg=header_color, fg="white") \
+                Button(self.expense_frame, text="+", command=ja, relief=FLAT, bg=header_color, fg="white") \
                     .grid(row=ind, column=2, pady=5, padx=5, sticky=NSEW)
 
     def _make_recent(self):
@@ -127,7 +127,7 @@ class TKBudget(Frame):
 
         commands = [partial(self.cumulate_income, i) for i in range(3)]
         for ind, ja in enumerate(commands):
-            y = HoverButton(income_frame, text="+", command=ja, relief=FLAT, bg=header_color, fg="white")
+            y = Button(income_frame, text="+", command=ja, relief=FLAT, bg=header_color, fg="white")
             y.grid(row=ind, column=2, sticky=EW, padx=5)
             self.income_buttons.append(y)
 

@@ -2,6 +2,8 @@
 Holds the Member model
 """
 from dataclasses import dataclass
+from tinydb import TinyDB
+from tinydbservice import TinyDbService
 
 
 @dataclass
@@ -28,5 +30,11 @@ class Member:
         """
         mem = Member()
         for k, v in kw_dict.items():
+            if k == "xp_bar":
+                continue
             setattr(mem, k, v)
         return mem
+
+
+"""Controller for managing members"""
+MemberController = TinyDbService[Member](TinyDB("memberdb.json"), Member)

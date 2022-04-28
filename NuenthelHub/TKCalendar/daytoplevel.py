@@ -7,9 +7,9 @@ Classes:
 
 """
 
-from tkinter import Toplevel, Label, CENTER, END, FLAT, Listbox, SINGLE, EW, PhotoImage
+from tkinter import Toplevel, CENTER, END, FLAT, Listbox, SINGLE, EW, PhotoImage, GROOVE
+from tkinter.ttk import Style, Label, Button
 import NuenthelHub.TKCalendar.datehandler as dh
-from NuenthelHub.supportmodules.modifiedwidgets import HoverButton
 from NuenthelHub.TKCalendar.tkcalendar_ext import TKAddEventExtension, TKRemoveEvent, TKChangeEvent
 from NuenthelHub.TKCalendar.event import EventController
 from NuenthelHub.TKCalendar.img.imgpath import image_path
@@ -23,7 +23,7 @@ class DayTopWindow(Toplevel):
 
         """ Window Attributes """
         self.attributes = ("-topmost", True)
-        self.title(f"{month}/{day}/{year} Events")
+        self.title(f"Event Manager")
         self.resizable(width=False, height=False)
         self.event_box = None
         self.configure(bg="#D1D6D3")
@@ -36,6 +36,12 @@ class DayTopWindow(Toplevel):
         self.month = month
         self.year = year
 
+        """ Styling """
+        self.style = Style()
+        self.style.theme_use("alt")
+        self.style.configure("HoverButton.TButton", bg="white", relief=FLAT)
+        self.style.configure("DtpLevel.TLabel", bg="white", relief=GROOVE, borderwidth=2)
+
         """ Internal Functions """
         self._make_header()
         self._make_day_adjust_buttons()
@@ -46,16 +52,15 @@ class DayTopWindow(Toplevel):
     def _make_header(self):
         """ Creates date header """
         header_text = f"{self.month}/{self.day}/{self.year}"
-        self.header = Label(self, text=header_text, font="Courier 15", justify=CENTER, borderwidth=3, bd=3,
-                            bg="#D1D6D3")
+        self.header = Label(self, text=header_text, font="Courier 15", justify=CENTER, style="DtpLevel.TLabel")
         self.header.grid(row=0, column=1, ipady=3)
 
     def _make_day_adjust_buttons(self):
         """ Creates day increase/decrease buttons """
-        HoverButton(
-            self, text=">", command=self.day_up, bg="#BDC1BE", height=1, width=4).grid(row=0, column=2)
-        HoverButton(
-            self, text="<", command=self.day_down, bg="#BDC1BE", height=1, width=4).grid(row=0, column=0)
+        Button(
+            self, text=">", command=self.day_up, width=4, style="HoverButton.TButton").grid(row=0, column=2)
+        Button(
+            self, text="<", command=self.day_down, width=4, style="HoverButton.TButton").grid(row=0, column=0)
 
     def _make_event_listbox(self):
         """ Creates event listbox to display day events """
@@ -68,15 +73,15 @@ class DayTopWindow(Toplevel):
         self.remove_img = PhotoImage(file=image_path + "remove_event.png")
         self.change_img = PhotoImage(file=image_path + "change_event.png")
 
-        HoverButton(
-            self, image=self.add_img, text="Add Image", bg="gray", command=self.add_event,
-            relief=FLAT).grid(row=2, column=0)
-        HoverButton(
-            self, image=self.remove_img, text="Remove Event", bg="gray", command=self.remove_event,
-            relief=FLAT).grid(row=2, column=1)
-        HoverButton(
-            self, image=self.change_img, text="Change Event", bg="gray", command=self.change_event,
-            relief=FLAT).grid(row=2, column=2)
+        Button(
+            self, image=self.add_img, text="Add Image", style="HoverButton.TButton", command=self.add_event).grid(row=2,
+                                                                                                                  column=0)
+        Button(
+            self, image=self.remove_img, text="Remove Event", style="HoverButton.TButton",
+            command=self.remove_event).grid(row=2, column=1)
+        Button(
+            self, image=self.change_img, text="Change Event", style="HoverButton.TButton",
+            command=self.change_event).grid(row=2, column=2)
 
     def _configure_header(self):
         """ Update header to current month value """

@@ -38,6 +38,18 @@ class TKAddEventExtension:
         self.callback = callback
         self.add_style = None
 
+        """ Styling """
+        self.style = Style()
+        self.style.theme_use("vista")
+        self.style.configure("AddMain.TFrame", background="white")
+        self.style.configure("AddExt.TFrame", background="white")
+        self.style.configure("ReqInfo.TCombobox", fieldbackground="white", background="white")
+        self.style.configure("Category.TCombobox", background="white")
+        self.style.configure("AddConfirm.TLabel", background="white")
+        self.style.configure("ReqInfo.TLabel", background="white", foreground="red")
+        self.style.configure("ReqInfoRed.TCombobox", fieldbackground="red", background="white")
+        self.style.configure("ReqInfoNorm.TCombobox", fieldbackground="white", background="white")
+
         """ Internal Functions """
         self._create_main_frame()
         self._make_header()
@@ -92,7 +104,7 @@ class TKAddEventExtension:
     def _make_category_combobox(self):
         """ Create combobox to collect category """
         categories = ["S-Work", "C-Work", "Meeting", "Holiday", "Reminder"]
-        self.category_selector = Combobox(self.main_frame, values=categories, justify=CENTER, background="white")
+        self.category_selector = Combobox(self.main_frame, values=categories, justify=CENTER, style="Category.TCombobox")
         self.category_selector.pack(pady=8)
         self.category_selector.set("Category")
         self.category_selector.bind("<<ComboboxSelected>>", lambda e: self.main_frame.focus())
@@ -133,18 +145,19 @@ class TKAddEventExtension:
             "category": self.category_selector.get()
         }
 
-        self.add_style = Style()
         if ev_dict["time_hours"] == "Hour" or ev_dict["time_minutes"] == "Minutes" or ev_dict["title"] == "Title":
-            self.add_style.configure("ReqInfo.TCombobox", fieldbackground="red", background="white")
-            self.title_entry.configure(bg="red")
+            # Change required widgets red to show edit reqs
+            self.add_style.configure("ReqInfo.TCombobox", fieldbackground="red")
+            self.style.configure("ReqInfo.TEntry", background="red")
+
             self.warning = Label(self.main_frame, text="Please fill in required information.", style="ReqInfo.TLabel",
                                  font="Roboto 13")
             self.warning.pack()
             return
 
         """ Reconfigure red zones if triggered """
-        self.title_entry.configure(bg="white")
-        self.add_style.configure("ReqInfo.TCombobox", fieldbackground="white", background="white")
+        self.add_style.configure("ReqInfo.TCombobox", fieldbackground="white")
+        self.style.configure("ReqInfo.TEntry", background="white")
 
         e = Event.create_from_dict(ev_dict)
 
@@ -156,9 +169,9 @@ class TKAddEventExtension:
             self.root.confirmation.destroy()
 
         if EventController.insert(e):
-            self.root.confirmation = Label(self.root, text="Event Added!", font="Courier 10")
+            self.root.confirmation = Label(self.root, text="Event Added!", font="Courier 10", style="AddConfirm.TLabel")
         else:
-            self.root.confirmation = Label(self.root, text="Sorry, something went wrong...", font="Courier 10")
+            self.root.confirmation = Label(self.root, text="Sorry, something went wrong...", font="Courier 10", style="AddConfirm.TLabel")
 
         self.root.confirmation.grid(row=self.grid_row_start + 1, column=1, pady=10)
         self.root.extension = None
@@ -329,18 +342,16 @@ class TKChangeEvent:
             "category": self.category_selector.get()
         }
 
-        self.change_style = Style()
         if ev_dict["time_hours"] == "Hour" or ev_dict["time_minutes"] == "Minutes" or ev_dict["title"] == "Title":
-            self.change_style.configure("ReqInfo.TCombobox", fieldbackground="red", background="white")
-            self.title_entry.configure(bg="red")
+            self.title_entry.configure(style="Required.TEntry")
             self.warning = Label(self.main_frame, text="Please fill in required information.",
-                                 style="ReqInfo.TCombobox",
+                                 style="ReqInfo.TLabel",
                                  font="Helvetica 13")
             self.warning.grid(row=6, column=0, pady=10)
             return
 
         """ Reconfigure red zones if triggered """
-        self.title_entry.configure(bg="white")
+        self.title_entry.configure(style="TEntry")
         self.change_style.configure("ReqInfo.TCombobox", fieldbackground="white", background="white")
 
         event = Event.create_from_dict(ev_dict)
