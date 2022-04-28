@@ -1,8 +1,6 @@
-from tkinter import Tk, NSEW, BOTH
+from tkinter import Tk, NSEW, BOTH, CENTER
 from tkinter.ttk import Style, Frame, Progressbar, LabelFrame
 from NuenthelHub.TKLevelUp.member import MemberController, Member
-
-class HomeRPGui:
 
 
 class HomeRPG:
@@ -11,7 +9,9 @@ class HomeRPG:
         self.players = {}
         self.style = Style()
         self.style.theme_use(theme)
-        self.style.configure("RPG.Horizontal.TProgressbar")
+        self.style.configure("RPG.Horizontal.TProgressbar", background="white")
+        self.style.configure("RPG.TLabelframe", background="white")
+        self.style.configure("RPG.TLabelframe.Label", background="white", font="Roboto 12")
 
     def get_members(self):
         for member in MemberController.find_all():
@@ -20,7 +20,7 @@ class HomeRPG:
     def create_rpg_bars(self):
         for i, member in enumerate(self.players.keys()):
             # Create bar frame
-            member_xp_frame = LabelFrame(self.master, text=f"{member} Lv.{self.players[member]['level']}")
+            member_xp_frame = LabelFrame(self.master, text=f"{member} Lv.{self.players[member]['level']}", style="RPG.TLabelframe")
             member_xp_frame.grid(row=0, column=i, padx=10, pady=10, sticky=NSEW)
 
             # Create XP bar

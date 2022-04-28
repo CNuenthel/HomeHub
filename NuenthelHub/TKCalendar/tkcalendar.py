@@ -17,7 +17,7 @@ button_bg = "#808080"
 class TKCalendar(Frame):
     """ TKinter Calendar """
 
-    def __init__(self, master: Tk or Frame, callback: callable = None, **kwargs):
+    def __init__(self, master, callback: callable = None, **kwargs):
         super().__init__(**kwargs)
 
         """ Window Attributes """

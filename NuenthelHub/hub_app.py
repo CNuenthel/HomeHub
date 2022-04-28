@@ -1,14 +1,10 @@
 from tkinter import Tk, NSEW, SUNKEN, BOTH, CENTER
 from tkinter.ttk import Frame, Style, Button
 from supportmodules import modifiedwidgets
-from TKCalendar import tkcalendar
+from TKLevelUp import housemembersrpg as rpg
 
-dk_gray = "#464646"
-lt_gray = "#AAAAAA"
-subtle_green = "#ccfdcc"
-
-btn_ipadx = 60
-btn_ipady = 100
+btn_ipadx = 25
+btn_ipady = 80
 
 
 def row_col_configure(master: Tk or Frame, weight: int, col_index: int = 0, row_index: int = 0, row_config: bool = True, col_config: bool = True):
@@ -23,9 +19,8 @@ def row_col_configure(master: Tk or Frame, weight: int, col_index: int = 0, row_
 
 class RootGUI:
     """ Creates Root Window GUI """
-    def __init__(self):
-        self.master = Tk()
-        self.master.minsize(width=1500, height=900)
+    def __init__(self, master):
+        self.master = master
         self.master.title("Nuenthel Hub")
         self.master.configure(background="white")
         self.master.resizable(True, True)
@@ -37,9 +32,9 @@ class RootGUI:
         """ Styles """
         self.style = Style()
         self.style.theme_use("clam")
-        self.style.configure("Body.TFrame", relief=SUNKEN)
+        self.style.configure("Body.TFrame", relief=SUNKEN, bg="black")
 
-        """ Init GUI """
+        """ Init GUI Frames """
         self.header_frame = Frame(self.master, style="HubHdr.TFrame")
         self.header_frame.grid(row=0, column=0, padx=10, pady=10, sticky=NSEW)
 
@@ -49,20 +44,27 @@ class RootGUI:
         self.sidebar_frame = Frame(self.master, relief=SUNKEN, borderwidth=2, style="Sidebar.TFrame")
         self.sidebar_frame.grid(row=1, column=1, padx=20, pady=20, sticky=NSEW)
 
-        self.connection_frame = Frame(self.header_frame)
-        self.connection_frame.grid(row=0, column=1, padx=10, pady=10, sticky=NSEW)
-
+        """ Sony Bravia connection visual """
         self.tv_connected_btn = Button(
-            self.connection_frame, text=self.tv_connected, style="Tv.TButton", state="disabled")
-        self.tv_connected_btn.grid(row=0, column=0, padx=10, pady=10, sticky=NSEW)
+            self.header_frame, text=f"TV {self.tv_connected}", style="Tv.TButton", state="disabled")
+        self.tv_connected_btn.grid(row=0, column=2, padx=10, pady=10, sticky=NSEW)
 
+        """ Google Sheets connection visual """
         self.sheets_connected_btn = Button(
-            self.connection_frame, text=f"Sheets {self.budget_connected}", style="Sheets.TButton", state="disabled")
-        self.sheets_connected_btn.grid(row=0, column=1, padx=10, pady=10, sticky=NSEW)
+            self.header_frame, text=f"Sheets {self.budget_connected}", style="Sheets.TButton", state="disabled")
+        self.sheets_connected_btn.grid(row=0, column=3, padx=10, pady=10, sticky=NSEW)
+
+        """ Set up home RPG """
+        self.rpg_frame = Frame(self.header_frame)
+        self.rpg_frame.grid(row=0, column=0, padx=10, pady=10, sticky=NSEW)
+        self.rpg = rpg.HomeRPG(self.rpg_frame)
+        self.rpg.get_members()
+        self.rpg.create_rpg_bars()
+        row_col_configure(self.rpg_frame, 1, row_config=False)
 
 
 class MainPage:
-    def __init__(self, master: RootGUI):
+    def __init__(self, master):
         self.master = master
 
         """ GUI Widgets """
@@ -72,15 +74,8 @@ class MainPage:
         self.style = Style()
         self.style.theme_use("vista")
         self.style.configure("TFrame", background="white")
-        self.style.configure("Main.TButton", background=dk_gray, width=20, relief=SUNKEN, foreground="white",
+        self.style.configure("Main.TButton", background="white", width=20, relief=SUNKEN, foreground="black",
                              font="Roboto 20 bold")
-        self.style.configure("Tv.TButton", background="green", anchor=CENTER)
-        self.style.configure("Sheet.TButton", background="green", anchor=CENTER)
-        self.style.configure("HubHdr.TFrame", background="white")
-        self.style.configure("Hdr.Progressbar", background="white")
-        self.style.configure("Rpg.TLabelFrame", background="white")
-        self.style.configure("Sunken.TFrame", borderwidth=4, background="black")
-        self.style.configure("Return.TButton", background="black", foreground="white")
 
         """Internal Functions"""
         self._forget_sidebar()
@@ -91,9 +86,16 @@ class MainPage:
         self._create_todo_button()
         self._create_home_mtn_button()
         self._create_upcoming_events()
-        
+        row_col_configure(self.master.body_frame, 1)
+        row_col_configure(self.master.sidebar_frame, 1)
+        row_col_configure(self.master.header_frame, 1, row_config=False)
+
     def _forget_sidebar(self):
         self.master.sidebar_frame.grid_forget()
+
+    def _sweep_widgets(self):
+        for widget in self.main_btn_widgets:
+            widget.grid_forget()
 
     def _create_calendar_button(self):
         self.calendar_button = Button(self.master.body_frame, text="Calendar", style="Main.TButton", command=self.show_calendar)
@@ -137,7 +139,8 @@ class MainPage:
 
 
 if __name__ == '__main__':
-    root = RootGUI()
+    tk = Tk()
+    root = RootGUI(tk)
     main_page = MainPage(root)
 
     root.master.mainloop()
