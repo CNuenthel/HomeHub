@@ -84,8 +84,14 @@ class MainPage:
 
         """Internal Functions"""
         self._forget_sidebar()
-        # self._number()
-
+        self._create_calendar_button()
+        self._create_budget_button()
+        self._create_shopping_button()
+        self._create_chores_button()
+        self._create_todo_button()
+        self._create_home_mtn_button()
+        self._create_upcoming_events()
+        
     def _forget_sidebar(self):
         self.master.sidebar_frame.grid_forget()
 
