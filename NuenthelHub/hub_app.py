@@ -2,6 +2,7 @@ from tkinter import Tk, NSEW, SUNKEN, BOTH, CENTER
 from tkinter.ttk import Frame, Style, Button
 from supportmodules import modifiedwidgets
 from TKLevelUp import housemembersrpg as rpg
+from TKCalendar import tkcalendar as tkc
 
 btn_ipadx = 25
 btn_ipady = 80
@@ -135,7 +136,8 @@ class MainPage:
 # _____________ Button Commands ________________________________________________________________________________________
 
     def show_calendar(self):
-        print("Button Pushed")
+        self._sweep_widgets()
+        tkcalendar = tkc.TKCalendar(root)
 
 
 if __name__ == '__main__':

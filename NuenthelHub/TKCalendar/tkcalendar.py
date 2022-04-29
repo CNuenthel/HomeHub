@@ -1,8 +1,9 @@
 from datetime import datetime
 from functools import partial
-from tkinter import GROOVE, CENTER, SUNKEN, NSEW, DISABLED, NORMAL, FLAT, Tk, messagebox
+from tkinter import BOTH, CENTER, SUNKEN, NSEW, DISABLED, NORMAL, FLAT, Tk, messagebox
 from tkinter.ttk import Frame, Label, Button, Style
 
+from NuenthelHub.hub_app import RootGUI
 from NuenthelHub.TKCalendar.datehandler import DateHandler as dH
 from NuenthelHub.TKCalendar.eventcolor import EventColor
 from NuenthelHub.TKCalendar.event import EventController
@@ -14,10 +15,10 @@ font = "Roboto "
 button_bg = "#808080"
 
 
-class TKCalendar(Frame):
+class TKCalendar():
     """ TKinter Calendar """
 
-    def __init__(self, master, callback: callable = None, **kwargs):
+    def __init__(self, master: RootGUI, callback: callable = None, **kwargs):
         super().__init__(**kwargs)
 
         """ Window Attributes """
@@ -28,7 +29,6 @@ class TKCalendar(Frame):
         self.toplevel = None
         self.legend = None
         self.month_lbl = None
-        self.configure(borderwidth=2, relief=GROOVE)
 
         """ Functional Variables """
         self.year = datetime.now().year  # Returns 4-digit int(year)
@@ -36,7 +36,7 @@ class TKCalendar(Frame):
         self.dates = []
 
         """ Styling """
-        self.style = Style(self)
+        self.style = Style(self.master.master)
         self.style.theme_use("vista")
         self.style.configure("MonthAdjust.TButton", background=button_bg, height=3)
         self.style.configure("Legend.TButton", relief=FLAT)
@@ -65,14 +65,14 @@ class TKCalendar(Frame):
         self.configure_header()
         self.configure_day_buttons()
         self.event_color_buttons()
-        self.row_col_configure(self, 1)
+        self.tkcal_sidebar_buttons()
         self.row_col_configure(self.header_frame, 1)
         self.row_col_configure(self.weekday_frame, 1)
         self.row_col_configure(self.day_frame, 1)
 
     def make_header_frame(self):
         """ Create frame for header affixed to main window """
-        self.header_frame = Frame(self, style="HF.TFrame")
+        self.header_frame = Frame(self.master.body_frame, style="HF.TFrame")
         self.header_frame.grid(row=0, column=0, padx=10, pady=10, sticky=NSEW)
 
     def make_month_head(self):
@@ -89,8 +89,8 @@ class TKCalendar(Frame):
 
     def make_weekday_frame(self):
         """ Create frame for day headers """
-        self.weekday_frame = Frame(self)
-        self.weekday_frame.grid(row=1, column=0,  padx=10, pady=10, sticky=NSEW)
+        self.weekday_frame = Frame(self.master.body_frame)
+        self.weekday_frame.grid(row=1, column=0,  padx=10, sticky=NSEW)
 
     def make_weekday_heads(self):
         day_list = ["Mon", "Tues", "Wed", "Thurs", "Fri", "Sat", "Sun"]
@@ -100,22 +100,23 @@ class TKCalendar(Frame):
                 .grid(row=0, column=i, sticky=NSEW)
 
     def make_day_frame(self):
-        self.day_frame = Frame(self)
-        self.day_frame.grid(row=2, column=0,  padx=10, pady=10, sticky=NSEW)
+        self.day_frame = Frame(self.master.body_frame)
+        self.day_frame.grid(row=2, column=0,  padx=10, sticky=NSEW)
 
     def make_day_buttons(self):
         """ Creates date buttons """
         for coord in [(i, j) for i in range(0, 6) for j in range(0, 7)]:
             btn = Button(
                 self.day_frame, style="Day.TButton", width=10)
-            btn.grid(row=coord[0], column=coord[1], sticky=NSEW)
+            btn.grid(row=coord[0], column=coord[1], sticky=NSEW, ipady=20)
             self.date_buttons.append(btn)
 
-    def tkcal_sidebar_buttons(self, master: Tk or Frame) -> list:
+    def tkcal_sidebar_buttons(self):
         """ Returns button to master to be placed on a sidebar frame """
-        calendar_sidebar_buttons = Button(master, text="Legend", command=self.open_legend, width=20)
-        cody_sched_scrape = Button(master, text="NDHP Scrape", command=self.cody_scrape, width=20)
-        return [calendar_sidebar_buttons, cody_sched_scrape]
+        calendar_sidebar_buttons = Button(self.master.sidebar_frame, text="Legend", command=self.open_legend, width=20)
+        cody_sched_scrape = Button(self.master.sidebar_frame, text="NDHP Scrape", command=self.cody_scrape, width=20)
+        for button in [calendar_sidebar_buttons, cody_sched_scrape]:
+            button.pack(expand=True, fill=BOTH)
 
     def configure_header(self):
         """ Set header to display updated month """
@@ -195,15 +196,15 @@ class TKCalendar(Frame):
 
         self.legend = TKLegend(self)
 
-    def cody_scrape(self):
+    @staticmethod
+    def cody_scrape():
         """ Scrapes Cody's schedule and adds events to calendar """
-        cws = CodyWorkSchedule()
+        CodyWorkSchedule()
         messagebox.showinfo(title="Shift Scraper", message="Schedule Scrape Complete!")
 
 
 if __name__ == '__main__':
     x = Tk()
-    # x.withdraw()
-    cal = TKCalendar(x)
-    cal.pack()
+    y = RootGUI(x)
+    z = TKCalendar(y)
     x.mainloop()

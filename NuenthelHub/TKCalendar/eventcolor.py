@@ -26,15 +26,15 @@ class EventColor:
 
     """ Configures TK Calendar buttons to display colors based on specific criteria """
     def colorize(self, button: Button, categories: List[str]):
-        if "c-work" in categories and "s-work" in categories:
+        if "C-Work" in categories and "S-Work" in categories:
             button.configure(style="CodyWork.TButton")
             return
 
-        if "c-work" in categories:
+        if "C-Work" in categories:
             button.configure(style="CodyWork.TButton")
             return
 
-        if "s-work" in categories:
+        if "S-Work" in categories:
             button.configure(style="SamWork.TButton")
             return
 
