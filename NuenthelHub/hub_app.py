@@ -1,8 +1,9 @@
 from tkinter import Tk, NSEW, SUNKEN, BOTH, FLAT, GROOVE, PhotoImage
 from tkinter.ttk import Frame, Style, Button, Label
-from supportmodules import modifiedwidgets
+
 from TKLevelUp import housemembersrpg as rpg
 from TKCalendar import tkcalendar as tkc
+from TKBudget import tkbudget as tkb
 
 
 def row_col_configure(master: Tk or Frame, weight: int, col_index: int = 0, row_index: int = 0, row_config: bool = True,
@@ -38,13 +39,13 @@ class RootGUI(Tk):
         self.style = Style(self)
         self.style.theme_use("clam")
 
-        self.mod_styles = Style()
-        self.mod_styles.configure("Header.TFrame", relief=SUNKEN)
-        self.mod_styles.configure("Body.TFrame", relief=SUNKEN)
-        self.mod_styles.configure("Main.TButton", background="white", width=20, relief=SUNKEN, foreground="black",
+        # self.mod_styles = Style()
+        self.style.configure("Header.TFrame", relief=SUNKEN)
+        self.style.configure("Body.TFrame", relief=SUNKEN)
+        self.style.configure("Main.TButton", background="white", width=20, relief=SUNKEN, foreground="black",
                              font="Roboto 20 bold")
-        self.mod_styles.configure("Sheets.TButton", background="green", relief=FLAT)
-        self.mod_styles.configure("Tv.TButton", background="green", relief=FLAT)
+        self.style.configure("Sheets.TButton", background="green", relief=FLAT)
+        self.style.configure("Tv.TButton", background="green", relief=FLAT)
 
         """ Init GUI Frames """
         self.header_frame = Frame(self, style="Header.TFrame", relief=SUNKEN)
@@ -113,7 +114,8 @@ class RootGUI(Tk):
 
     def _create_budget_button(self):
         self.bud_png = PhotoImage(file="img/budgeting.png")
-        self.budget_button = Button(self.main_button_frame, image=self.bud_png, text="Budget", style="Main.TButton")
+        self.budget_button = Button(self.main_button_frame, image=self.bud_png, text="Budget", style="Main.TButton",
+                                    command=self.show_budget)
         self.budget_button.grid(row=0, column=1, padx=10, pady=10, sticky=NSEW)
 
     def _create_shopping_button(self):
@@ -139,9 +141,11 @@ class RootGUI(Tk):
 
     def show_calendar(self):
         self._sweep_widgets()
-
         self.calendar = tkc.TKCalendar(self, callback=self._repack_main)
 
+    def show_budget(self):
+        self._sweep_widgets()
+        self.budget = tkb.TKBudget(self.body_frame, callback=self._repack_main)
 
 if __name__ == '__main__':
     RootGUI().mainloop()

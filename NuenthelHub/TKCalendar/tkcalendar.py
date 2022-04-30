@@ -38,21 +38,21 @@ class TKCalendar:
         self.style.configure("CalMain.TFrame", background="white")
         self.style.configure("AddCancel.TButton", relief=FLAT, background="#BDC1BE")
         self.style.configure("Wkdy.TLabel", background="white")
-        self.style.configure("Day.TButton", relief=SUNKEN, background="white")
-        self.style.configure("CurrentDay.TButton", relief=SUNKEN, background="green")
-        self.style.configure("DisDate.TButton", relief=SUNKEN, background="#999999")
+        self.style.configure("Day.TButton", background="white", font="Roboto 12 bold")
+        self.style.configure("CurrentDay.TButton", background="green", font="Roboto 12 bold")
+        self.style.configure("DisDate.TButton", background="#999999")
 
         self.style.configure("Month.TLabel", background="white")
 
-        self.style.configure("CodyWork.TButton", background="green", relief=SUNKEN)
-        self.style.configure("SamWork.TButton", background="#FEFF8DD", relief=SUNKEN)
-        self.style.configure("BothWork.TButton", background="#C6B6D6", relief=SUNKEN)
-        self.style.configure("Other.TButton", background="#ACDDDE", relief=SUNKEN)
+        self.style.configure("CodyWork.TButton", background="green", relief=SUNKEN, font="Roboto 12 bold")
+        self.style.configure("SamWork.TButton", background="orange", relief=SUNKEN, font="Roboto 12 bold")
+        self.style.configure("BothWork.TButton", background="red", relief=SUNKEN, font="Roboto 12 bold")
+        self.style.configure("Other.TButton", background="purple", relief=SUNKEN, font="Roboto 12 bold")
 
-        """ Helper Classes """
+        """ External Helper Classes """
         self.dh = dH()
 
-        """ Internal Functions """
+        """ GUI Constructor Functions """
         self.make_sidebar_frame()
         self.make_main_frame()
         self.make_legend_frame()
@@ -62,10 +62,12 @@ class TKCalendar:
         self.make_month_head()
         self.make_legend()
         self.make_day_buttons()
+        self.make_sidebar_buttons()
+
+        """ GUI Configuration Functions """
         self.configure_header()
         self.configure_day_buttons()
         self.event_color_buttons()
-        self.make_sidebar_buttons()
         self.row_col_configure(self.calendar_header_frame, 1, row_config=False)
         self.row_col_configure(self.day_frame, 1)
         self.row_col_configure(self.main_frame, 1)
@@ -119,7 +121,7 @@ class TKCalendar:
         for coord in [(i, j) for i in range(1, 7) for j in range(0, 7)]:
             btn = Button(
                 self.day_frame, style="Day.TButton")
-            btn.grid(row=coord[0], column=coord[1], sticky=NSEW, ipady=20)
+            btn.grid(row=coord[0], column=coord[1], sticky=NSEW, ipady=20, padx=1, pady=1)
             self.date_buttons.append(btn)
 
     def make_sidebar_buttons(self):
@@ -163,7 +165,7 @@ class TKCalendar:
 
     def make_legend(self):
         """ Creates button representation of colors with category text """
-        colors = ["#F7D8BA", "#FEF8DD", "#C6B6D6", "#ACDDDE"]
+        colors = ["green", "orange", "red", "purple"]
         categories = ["Cody Works", "Sam Works", "Work Overlap", "Other"]
         for i, j in enumerate(colors):
             legend_style = Style()

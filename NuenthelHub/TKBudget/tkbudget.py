@@ -1,5 +1,5 @@
 from functools import partial
-from tkinter import Frame, Tk, NSEW, CENTER, FLAT, Label, GROOVE, W, EW, BOTH, END
+from tkinter import Frame, Tk, NSEW, CENTER, FLAT, Label, GROOVE, W, EW, BOTH, END, Button
 
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
@@ -13,20 +13,30 @@ font = "Roboto "
 header_color = "#232323"
 
 
-class TKBudget(Frame):
+def row_col_configure(master: Tk or Frame, weight: int, col_index: int = 0, row_index: int = 0, row_config: bool = True,
+                      col_config: bool = True):
+    columns, rows = master.grid_size()
+    if col_config:
+        for i in range(col_index, columns):
+            master.columnconfigure(i, weight=weight)
+    if row_config:
+        for i in range(row_index, rows):
+            master.rowconfigure(i, weight=weight)
+
+
+class TKBudget:
     """ Creates a top level GUI for budget handling """
 
-    def __init__(self, root: Frame or Tk, callback: callable = None):
+    def __init__(self, master, callback: callable = None):
         super().__init__()
-        """Window Attributes"""
-        self.configure(background=bg_color)
-        self.master = root
+        """ Window Attributes """
+        self.master = master
         self.callback = callback
 
-        """External Helper Classes"""
+        """ External Helper Classes """
         self.nfsheet = NuenthelSheetsData("N-Fam 2022")
 
-        """Widgets"""
+        """ Widgets """
         self.expense_entries = []
         self.expense_labels = []
         self.expense_hbuttons = []
@@ -37,30 +47,35 @@ class TKBudget(Frame):
         self.used_entry = None
         self.graph_frame = None
 
-        """GUI Constructor Functions"""
+        """ GUI Constructor Functions """
+        self._make_main_frame()
         self._make_header()
         self._make_expenses()
         self._make_recent()
         self._make_income()
         self._make_graph()
 
-        """GUI Configuration Functions"""
-        self._configure_rows_cols(self)
+        """ GUI Configuration Functions """
         self._configure_expense_labels()
         self._configure_expense_entries()
         self._configure_incomes()
+        row_col_configure(self.main_frame, 1)
+
+    def _make_main_frame(self):
+        self.main_frame = Frame(self.master.body_frame, style="CalMain.TFrame")
+        self.main_frame.grid(row=0, column=0, padx=10, pady=10, sticky=NSEW, columnspan=4, rowspan=2)
 
     def _make_header(self):
-        self.header_frame = Frame(self, background=header_color, relief=FLAT)
+        self.header_frame = Frame(self.main_frame, background=header_color, relief=FLAT)
         self.header_frame.grid(row=0, column=0, columnspan=8, sticky=NSEW)
         self.header_label = Label(self.header_frame, bg=header_color, fg="white", text="Budget",
                                   font=font + "25 underline")
         self.header_label.grid(row=0, column=0, columnspan=1, sticky=NSEW, padx=15)
-        self.darklight_frame = Frame(self, background=header_color, relief=FLAT)
+        self.darklight_frame = Frame(self.main_frame, background=header_color, relief=FLAT)
         self.darklight_frame.grid(row=1, column=0, columnspan=8, sticky=NSEW)
 
     def _make_expenses(self):
-        self.border_frame = Frame(self, background=border_color, borderwidth=3, relief=GROOVE)
+        self.border_frame = Frame(self.main_frame, background=border_color, borderwidth=3, relief=GROOVE)
         self.border_frame.grid(row=1, column=0, columnspan=3, rowspan=8, sticky=NSEW, padx=10, pady=10)
         self.expense_frame = Frame(self.border_frame, background=bg_color, borderwidth=3, relief=GROOVE)
         self.expense_frame.grid(row=0, column=0, columnspan=3, rowspan=8, padx=5, pady=5, ipadx=10, ipady=10,
@@ -72,7 +87,7 @@ class TKBudget(Frame):
         Label(self.expense_frame, text="Expenses", font=font + "15", bg="#909090").grid(row=0, column=0, padx=5, pady=5,
                                                                                         sticky=W)
         Button(self.expense_frame, text="Update", command=self._configure_expense_entries, relief=GROOVE, width=25,
-                    bg=header_color, fg="white") \
+                    background=header_color, fg="white") \
             .grid(row=0, column=1, columnspan=1)
 
         labels = ["Din", "Gro", "Tra", "Rec", "Per", "J&L", "Oth"]
@@ -89,11 +104,11 @@ class TKBudget(Frame):
             # This allows for cross list indexing to match buttons to entries
             commands = [partial(self.cumulate_expense, i) for i in range(7)]
             for ind, ja in enumerate(commands, 1):
-                Button(self.expense_frame, text="+", command=ja, relief=FLAT, bg=header_color, fg="white") \
+                Button(self.expense_frame, text="+", command=ja, relief=FLAT, background=header_color, fg="white") \
                     .grid(row=ind, column=2, pady=5, padx=5, sticky=NSEW)
 
     def _make_recent(self):
-        border_frame = Frame(self, background=border_color, borderwidth=3, relief=GROOVE)
+        border_frame = Frame(self.main_frame, background=border_color, borderwidth=3, relief=GROOVE)
         border_frame.grid(row=1, column=3, columnspan=2, rowspan=8, sticky=NSEW, padx=10, pady=10)
         self.recent_frame = Frame(border_frame, background=bg_color, borderwidth=3, relief=GROOVE)
         self.recent_frame.grid(row=0, column=0, columnspan=2, padx=5, pady=5, ipadx=10, ipady=10, sticky=NSEW)
@@ -101,15 +116,15 @@ class TKBudget(Frame):
         self._configure_rows_cols(border_frame)
         self._configure_rows_cols(self.recent_frame)
 
-        Label(self.recent_frame, text="Recent", font=font + "12 bold", bg=bg_color).pack()
+        Label(self.recent_frame, text="Recent", font=font + "12 bold", background=bg_color).pack()
 
         for i in range(11):
-            self.x = HoverLabel(self.recent_frame, text="", font=font + "12", bg=bg_color)
+            self.x = HoverLabel(self.recent_frame, text="", font=font + "12", background=bg_color)
             self.x.pack()
             self.recents.append(self.x)
 
     def _make_income(self):
-        border_frame = Frame(self, background=border_color, borderwidth=3, relief=GROOVE)
+        border_frame = Frame(self.main_frame, background=border_color, borderwidth=3, relief=GROOVE)
         border_frame.grid(row=1, column=5, columnspan=3, rowspan=3, sticky=NSEW, padx=10, pady=10)
         income_frame = Frame(border_frame, background=bg_color, borderwidth=3, relief=GROOVE)
         income_frame.grid(row=0, column=0, columnspan=2, rowspan=3, padx=5, pady=5, ipadx=10, ipady=10, sticky=NSEW)
@@ -119,7 +134,7 @@ class TKBudget(Frame):
 
         labels = ["Cody", "Sam", "Other"]
         for i, j in enumerate(labels):
-            Label(income_frame, text=j, font=font + "12 bold", bg=bg_color).grid(row=i, column=0, pady=5, padx=5,
+            Label(income_frame, text=j, font=font + "12 bold", background=bg_color).grid(row=i, column=0, pady=5, padx=5,
                                                                                  sticky=NSEW)
             se = SnapbackEntry(income_frame, font=font + "9 italic", justify=CENTER)
             se.grid(row=i, column=1, pady=5, padx=5, sticky=NSEW)
@@ -127,7 +142,7 @@ class TKBudget(Frame):
 
         commands = [partial(self.cumulate_income, i) for i in range(3)]
         for ind, ja in enumerate(commands):
-            y = Button(income_frame, text="+", command=ja, relief=FLAT, bg=header_color, fg="white")
+            y = Button(income_frame, text="+", command=ja, relief=FLAT, background=header_color, fg="white")
             y.grid(row=ind, column=2, sticky=EW, padx=5)
             self.income_buttons.append(y)
 
@@ -135,7 +150,7 @@ class TKBudget(Frame):
         if self.graph_frame is not None:
             self.graph_frame.destroy()
 
-        self.graph_frame = Frame(self, background=border_color, borderwidth=3, relief=GROOVE)
+        self.graph_frame = Frame(self.main_frame, background=border_color, borderwidth=3, relief=GROOVE)
         self.graph_frame.grid(row=4, column=5, columnspan=3, rowspan=5, sticky=NSEW, padx=10, pady=10)
         self._configure_rows_cols(self.graph_frame)
         figure = ExpensePlot().get_plot()
@@ -163,13 +178,13 @@ class TKBudget(Frame):
 
         for i, j in enumerate(self.expense_labels):
             if perc_list[i] < 50:
-                j.configure(bg="#ccfdcc")
+                j.configure(background="#ccfdcc")
             elif 50 <= perc_list[i] < 75:
-                j.configure(bg="#F9FDCC")
+                j.configure(background="#F9FDCC")
             elif 75 <= perc_list[i] < 90:
-                j.configure(bg="#FDF1CC")
+                j.configure(background="#FDF1CC")
             elif perc_list[i] >= 90:
-                j.configure(bg="#FDD0CC")
+                j.configure(background="#FDD0CC")
 
     def _configure_expense_entries(self):
         """
