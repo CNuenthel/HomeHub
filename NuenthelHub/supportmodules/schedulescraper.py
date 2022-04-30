@@ -13,7 +13,7 @@ from NuenthelHub.TKCalendar.event import Event
 import json
 
 """Login Information for NDHP Intranet"""
-with open("C:/Users/cnuen/OneDrive/Documents/GitHub/HomeHub/NuenthelHub/config.json", "r") as f:
+with open("config.json", "r") as f:
     config = json.load(f)
 
 

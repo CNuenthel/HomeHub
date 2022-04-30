@@ -26,7 +26,7 @@ class DayTopWindow(Toplevel):
         self.title(f"Event Manager")
         self.resizable(width=False, height=False)
         self.event_box = None
-        self.configure(bg="#D1D6D3")
+        self.configure(bg="#333333")
         self.extension = None
         self.confirmation = None
         self.calendar_callback = callback
@@ -38,9 +38,9 @@ class DayTopWindow(Toplevel):
 
         """ Styling """
         self.style = Style()
-        self.style.theme_use("alt")
-        self.style.configure("HoverButton.TButton", bg="white", relief=FLAT)
-        self.style.configure("DtpLevel.TLabel", bg="white", relief=GROOVE, borderwidth=2)
+        self.style.theme_use("clam")
+        self.style.configure("HoverButton.TButton", background="#333333", relief=FLAT, foreground="white")
+        self.style.configure("DtpLevel.TLabel", background="#333333", relief=FLAT, borderwidth=2, foreground="white")
 
         """ Internal Functions """
         self._make_header()

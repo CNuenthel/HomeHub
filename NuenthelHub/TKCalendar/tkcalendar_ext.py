@@ -38,18 +38,6 @@ class TKAddEventExtension:
         self.callback = callback
         self.add_style = None
 
-        """ Styling """
-        self.style = Style()
-        self.style.theme_use("vista")
-        self.style.configure("AddMain.TFrame", background="white")
-        self.style.configure("AddExt.TFrame", background="white")
-        self.style.configure("ReqInfo.TCombobox", fieldbackground="white", background="white")
-        self.style.configure("Category.TCombobox", background="white")
-        self.style.configure("AddConfirm.TLabel", background="white")
-        self.style.configure("ReqInfo.TLabel", background="white", foreground="red")
-        self.style.configure("ReqInfoRed.TCombobox", fieldbackground="red", background="white")
-        self.style.configure("ReqInfoNorm.TCombobox", fieldbackground="white", background="white")
-
         """ Internal Functions """
         self._create_main_frame()
         self._make_header()
@@ -232,9 +220,9 @@ class TKChangeEvent:
 
     def _create_main_frame(self):
         """ Create a frame for add event widgets """
-        self.border_frame = Frame(self.root, style="AddMain.TFrame")
+        self.border_frame = Frame(self.root, style="AddMainBorder.TFrame")
         self.border_frame.grid(row=self.grid_row_start, column=0, columnspan=self.column_count, sticky=NSEW)
-        self.main_frame = Frame(self.root, style="AddMain.TFrame")
+        self.main_frame = Frame(self.border_frame, style="AddMain.TFrame")
         self.main_frame.grid(row=self.grid_row_start, column=0, columnspan=self.column_count, sticky=NSEW, padx=10,
                              pady=10)
 
@@ -371,40 +359,6 @@ class TKChangeEvent:
         self.main_frame.destroy()
         self.root.extension = None
         self.callback()
-
-
-class TKLegend:
-    """
-    Creates a legend sidebar to a TK window to edit buttons based on set criteria
-
-    Parameters:
-        root_window:
-            Primary TK window to extend legend to
-    """
-    def __init__(self, root_window: Tk or Toplevel):
-        """ Extension Attributes """
-        self.root = root_window
-        self.grid_row_start = root_window.grid_size()[1]
-        self.column_count = root_window.grid_size()[0]
-
-        """ Internal Functions"""
-        self._create_main_frame()
-        self._create_legend_colors()
-
-    def _create_main_frame(self):
-        """ Create a frame for add event widgets """
-        self.main_frame = Frame(self.root)
-        self.main_frame.grid(row=2, column=self.column_count, rowspan=self.grid_row_start, columnspan=2, sticky=NSEW)
-
-    def _create_legend_colors(self):
-        """ Creates button representation of colors with category text """
-        colors = ["#F7D8BA", "#FEF8DD", "#C6B6D6", "#ACDDDE"]
-        categories = ["Cody Works", "Sam Works", "Work Overlap", "Other"]
-        for i, j in enumerate(colors):
-            legend_style = Style()
-            legend_style.configure(f"{j}.TButton", background=j, relief=FLAT)
-            Button(self.main_frame, text=categories[i], style=f"{j}.TButton").grid(row=i, column=0, sticky=NSEW, pady=25,
-                                                                                padx=10)
 
 
 class TKRemoveEvent:

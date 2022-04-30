@@ -25,6 +25,7 @@ class RootGUI(Tk):
         self.title("Nuenthel Hub")
         self.configure(background="white")
         self.resizable(True, True)
+        self.minsize(width=1500, height=900)
 
         """ GUI Widgets """
         self.main_btn_widgets = []
@@ -36,7 +37,7 @@ class RootGUI(Tk):
 
         """ Styles """
         self.style = Style(self)
-        self.style.theme_use("vista")
+        self.style.theme_use("clam")
         self.style.configure("Body.TFrame", relief=SUNKEN, bg="black")
         self.style.configure("TFrame", background="white")
         self.style.configure("Main.TButton", background="white", width=20, relief=SUNKEN, foreground="black",
@@ -129,7 +130,9 @@ class RootGUI(Tk):
 # _____________ Button Commands ________________________________________________________________________________________
 
     def show_calendar(self):
-        pass
+        self._sweep_widgets()
+        tkcal = tkc.TKCalendar(self)
+
 
 
 if __name__ == '__main__':

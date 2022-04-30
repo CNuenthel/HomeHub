@@ -1,11 +1,10 @@
 from datetime import datetime
 from functools import partial
-from tkinter import BOTH, CENTER, SUNKEN, NSEW, DISABLED, NORMAL, FLAT, Tk, messagebox
+from tkinter import BOTH, CENTER, SUNKEN, NSEW, DISABLED, NORMAL, FLAT, Tk, messagebox, EW
 from tkinter.ttk import Frame, Label, Button, Style
 
 from NuenthelHub.TKCalendar.datehandler import DateHandler as dH
 from NuenthelHub.TKCalendar.event import EventController
-from NuenthelHub.TKCalendar.tkcalendar_ext import TKLegend
 from NuenthelHub.TKCalendar.daytoplevel import DayTopWindow
 from NuenthelHub.supportmodules.schedulescraper import CodyWorkSchedule
 
@@ -32,51 +31,93 @@ class TKCalendar:
         self.year = datetime.now().year  # Returns 4-digit int(year)
         self.month = datetime.now().month  # Returns int(month)
         self.dates = []
+        self.legend_up = False
 
         """ Styling """
         self.style = Style(self.master.master)
-        self.style.theme_use("vista")
-        self.style.configure("MonthAdjust.TButton", background=button_bg, height=3)
+        self.style.theme_use("clam")
+        self.style.configure("MonthAdjust.TButton", background=button_bg)
         self.style.configure("Legend.TButton", relief=FLAT)
 
         # Add Event Extension Styling
+        self.style.configure("AddMain.TFrame", background="#333333")
+        self.style.configure("AddMainBorder.TFrame", background="#777777")
+        self.style.configure("AddExt.TFrame", background="#333333")
+        self.style.configure("ReqInfo.TCombobox", fieldbackground="white", background="white")
+        self.style.configure("Category.TCombobox", background="white")
+        self.style.configure("AddConfirm.TLabel", background="white")
+        self.style.configure("ReqInfo.TLabel", background="white", foreground="red")
+        self.style.configure("ReqInfoRed.TCombobox", fieldbackground="red", background="white")
+        self.style.configure("ReqInfoNorm.TCombobox", fieldbackground="white", background="white")
+        self.style.configure("AddExt.TLabel", background="#333333")
+
         self.style.configure("AddCancel.TButton", relief=FLAT, background="#BDC1BE")
         self.style.configure("Wkdy.TLabel", background="#ADD8E6", relief=SUNKEN)
-        self.style.configure("Day.TButton", relief=SUNKEN, height=4, background="white")
-        self.style.configure("CurrentDay.TButton", relief=SUNKEN, height=4, background="green")
-        self.style.configure("DisDate.TButton", relief=SUNKEN, height=4, background="black")
+        self.style.configure("Day.TButton", relief=SUNKEN, background="white")
+        self.style.configure("CurrentDay.TButton", relief=SUNKEN, background="green")
+        self.style.configure("DisDate.TButton", relief=SUNKEN, background="black")
 
         self.style.configure("HF.TFrame", background="white")
         self.style.configure("Month.TLabel", background="white")
         self.style.configure("TFrame", background="white")
 
-        self.style.configure("CodyWork.TButton", background="#F7D8BA", relief=SUNKEN, height=4)
-        self.style.configure("SamWork.TButton", background="#FEFF8DD", relief=SUNKEN, height=4)
-        self.style.configure("BothWork.TButton", background="#C6B6D6", relief=SUNKEN, height=4)
-        self.style.configure("Other.TButton", background="#ACDDDE", relief=SUNKEN, height=4)
+        self.style.configure("CodyWork.TButton", background="green", relief=SUNKEN)
+        self.style.configure("SamWork.TButton", background="#FEFF8DD", relief=SUNKEN)
+        self.style.configure("BothWork.TButton", background="#C6B6D6", relief=SUNKEN)
+        self.style.configure("Other.TButton", background="#ACDDDE", relief=SUNKEN)
 
         """ Helper Classes """
         self.dh = dH()
 
         """ Internal Functions """
+        self.make_sidebar_frame()
+        self.make_main_frame()
         self.make_header_frame()
         self.make_month_head()
+        self.make_legend_frame()
         self.make_weekday_frame()
         self.make_weekday_heads()
         self.make_day_frame()
+        self.make_legend()
         self.make_day_buttons()
         self.configure_header()
         self.configure_day_buttons()
         self.event_color_buttons()
-        self.tkcal_sidebar_buttons()
+        self.make_sidebar_buttons()
         self.row_col_configure(self.header_frame, 1)
-        self.row_col_configure(self.weekday_frame, 1)
+        self.row_col_configure(self.weekday_frame, 1, row_config=False)
         self.row_col_configure(self.day_frame, 1)
+        self.row_col_configure(self.main_frame, 1)
+        self.row_col_configure(self.legend_frame, 1)
+
+    def make_main_frame(self):
+        self.main_frame = Frame(self.master.body_frame)
+        self.main_frame.grid(row=0, column=0, padx=10, pady=10, sticky=NSEW)
+
+    def make_sidebar_frame(self):
+        self.sidebar_frame = Frame(self.master)
+        self.sidebar_frame.grid(row=1, column=1, padx=10, pady=10, sticky=NSEW)
 
     def make_header_frame(self):
         """ Create frame for header affixed to main window """
-        self.header_frame = Frame(self.master.body_frame, style="HF.TFrame")
+        self.header_frame = Frame(self.main_frame, style="HF.TFrame")
         self.header_frame.grid(row=0, column=0, padx=10, pady=10, sticky=NSEW)
+
+    def make_weekday_frame(self):
+        """ Create frame for day headers """
+        self.weekday_frame = Frame(self.main_frame)
+        self.weekday_frame.grid(row=1, column=0,  padx=10, sticky=EW)
+
+    def make_day_frame(self):
+        self.day_frame = Frame(self.main_frame)
+        self.day_frame.grid(row=2, column=0,  padx=10, sticky=NSEW)
+
+    def make_legend_frame(self):
+        """ Create a frame for add event widgets """
+        self.legend_frame = Frame(self.main_frame)
+
+    def show_legend_frame(self):
+        self.legend_frame.grid(row=0, column=1, rowspan=7, sticky=NSEW)
 
     def make_month_head(self):
         """ Creates calendar header label """
@@ -84,41 +125,33 @@ class TKCalendar:
         self.month_lbl.grid(row=0, column=1, sticky=NSEW, pady=10)
 
         Button(
-            self.header_frame, text="<", command=self.month_down, style="MonthAdjust.TButton", width=8)\
+            self.header_frame, text="<", command=self.month_down, style="MonthAdjust.TButton")\
             .grid(row=0, column=0, pady=10)
         Button(
-            self.header_frame, text=">", command=self.month_up, style="MonthAdjust.TButton", width=8)\
+            self.header_frame, text=">", command=self.month_up, style="MonthAdjust.TButton")\
             .grid(row=0, column=2, pady=10)
-
-    def make_weekday_frame(self):
-        """ Create frame for day headers """
-        self.weekday_frame = Frame(self.master.body_frame)
-        self.weekday_frame.grid(row=1, column=0,  padx=10, sticky=NSEW)
 
     def make_weekday_heads(self):
         day_list = ["Mon", "Tues", "Wed", "Thurs", "Fri", "Sat", "Sun"]
         """ Builds heading day names """
         for i, j in enumerate(day_list):
-            Label(self.weekday_frame, text=day_list[i], style="Wkdy.TLabel", anchor=CENTER, width=10) \
+            Label(self.weekday_frame, text=day_list[i], style="Wkdy.TLabel", anchor=CENTER) \
                 .grid(row=0, column=i, sticky=NSEW)
-
-    def make_day_frame(self):
-        self.day_frame = Frame(self.master.body_frame)
-        self.day_frame.grid(row=2, column=0,  padx=10, sticky=NSEW)
 
     def make_day_buttons(self):
         """ Creates date buttons """
         for coord in [(i, j) for i in range(0, 6) for j in range(0, 7)]:
             btn = Button(
-                self.day_frame, style="Day.TButton", width=10)
+                self.day_frame, style="Day.TButton")
             btn.grid(row=coord[0], column=coord[1], sticky=NSEW, ipady=20)
             self.date_buttons.append(btn)
 
-    def tkcal_sidebar_buttons(self):
+    def make_sidebar_buttons(self):
         """ Returns button to master to be placed on a sidebar frame """
-        calendar_sidebar_buttons = Button(self.master.sidebar_frame, text="Legend", command=self.open_legend, width=20)
-        cody_sched_scrape = Button(self.master.sidebar_frame, text="NDHP Scrape", command=self.cody_scrape, width=20)
-        for button in [calendar_sidebar_buttons, cody_sched_scrape]:
+        return_btn = Button(self.sidebar_frame, text="")
+        legend = Button(self.sidebar_frame, text="Legend", command=self.open_legend)
+        cody_sched_scrape = Button(self.sidebar_frame, text="NDHP Scrape", command=self.cody_scrape)
+        for button in [legend, cody_sched_scrape]:
             button.pack(expand=True, fill=BOTH)
 
     def configure_header(self):
@@ -152,24 +185,37 @@ class TKCalendar:
                     categories = [event.category for event in date_events]
                     self.colorize(button, categories)
 
+    def make_legend(self):
+        """ Creates button representation of colors with category text """
+        colors = ["#F7D8BA", "#FEF8DD", "#C6B6D6", "#ACDDDE"]
+        categories = ["Cody Works", "Sam Works", "Work Overlap", "Other"]
+        for i, j in enumerate(colors):
+            legend_style = Style()
+            legend_style.configure(f"{j}.TButton", background=j, relief=FLAT)
+            Button(self.legend_frame, text=categories[i], style=f"{j}.TButton").grid(row=i, column=0, sticky=NSEW, pady=25,
+                                                                                padx=10)
+
     @staticmethod
     def colorize(button: Button, categories: list):
-        if "C-Work" in categories and "S-Work" in categories:
+        if "c-work" in categories and "s-work" in categories:
             button.configure(style="CodyWork.TButton")
-        if "C-Work" in categories:
+        if "c-work" in categories:
             button.configure(style="CodyWork.TButton")
-        if "S-Work" in categories:
+        if "s-work" in categories:
             button.configure(style="SamWork.TButton")
         if categories:
             button.configure(style="Other.TButton")
 
     @staticmethod
-    def row_col_configure(master: Tk or Frame, weight: int, col_index: int = 0, row_index: int = 0):
+    def row_col_configure(master: Tk or Frame, weight: int, col_index: int = 0, row_index: int = 0,
+                          row_config: bool = True, col_config: bool = True):
         columns, rows = master.grid_size()
-        for i in range(col_index, columns):
-            master.columnconfigure(i, weight=weight)
-        for i in range(row_index, rows):
-            master.rowconfigure(i, weight=weight)
+        if col_config:
+            for i in range(col_index, columns):
+                master.columnconfigure(i, weight=weight)
+        if row_config:
+            for i in range(row_index, rows):
+                master.rowconfigure(i, weight=weight)
 
     """ ______________________________________Button Functions ________________________________________________"""
 
@@ -203,17 +249,16 @@ class TKCalendar:
 
     def open_legend(self):
         """ Opens legend sidebar extension """
-        if self.legend:
-            self.legend.main_frame.destroy()
-            self.legend = None
-            return
+        if self.legend_up:
+            self.legend_frame.grid_forget()
+            self.legend_up = False
+        else:
+            self.show_legend_frame()
+            self.legend_up = True
 
-        self.legend = TKLegend(self)
 
     @staticmethod
     def cody_scrape():
         """ Scrapes Cody's schedule and adds events to calendar """
         CodyWorkSchedule()
         messagebox.showinfo(title="Shift Scraper", message="Schedule Scrape Complete!")
-
-
