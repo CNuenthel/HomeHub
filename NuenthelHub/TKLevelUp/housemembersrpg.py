@@ -10,8 +10,8 @@ class HomeRPG:
         self.style = Style(self.master.master)
         self.style.theme_use(theme)
         self.style.configure("RPG.Horizontal.TProgressbar", background="white")
-        self.style.configure("RPG.TLabelframe", background="white")
-        self.style.configure("RPG.TLabelframe.Label", background="white", font="Roboto 12")
+        self.style.configure("RPG.TLabelframe", background="#F0F0F0")
+        self.style.configure("RPG.TLabelframe.Label", background="#F0F0F0", font="Roboto 12")
 
     def get_members(self):
         for member in MemberController.find_all():
