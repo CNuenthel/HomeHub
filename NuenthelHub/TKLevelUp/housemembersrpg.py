@@ -1,4 +1,4 @@
-from tkinter import Tk, NSEW, BOTH, CENTER
+from tkinter import Tk, NSEW, BOTH
 from tkinter.ttk import Style, Frame, Progressbar, LabelFrame
 from NuenthelHub.TKLevelUp.member import MemberController, Member
 
@@ -7,7 +7,7 @@ class HomeRPG:
     def __init__(self, master: Tk or Frame, theme: str = "vista"):
         self.master = master
         self.players = {}
-        self.style = Style()
+        self.style = Style(self.master.master)
         self.style.theme_use(theme)
         self.style.configure("RPG.Horizontal.TProgressbar", background="white")
         self.style.configure("RPG.TLabelframe", background="white")

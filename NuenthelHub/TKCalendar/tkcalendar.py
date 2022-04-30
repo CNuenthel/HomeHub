@@ -3,9 +3,7 @@ from functools import partial
 from tkinter import BOTH, CENTER, SUNKEN, NSEW, DISABLED, NORMAL, FLAT, Tk, messagebox
 from tkinter.ttk import Frame, Label, Button, Style
 
-from NuenthelHub.hub_app import RootGUI
 from NuenthelHub.TKCalendar.datehandler import DateHandler as dH
-from NuenthelHub.TKCalendar.eventcolor import EventColor
 from NuenthelHub.TKCalendar.event import EventController
 from NuenthelHub.TKCalendar.tkcalendar_ext import TKLegend
 from NuenthelHub.TKCalendar.daytoplevel import DayTopWindow
@@ -15,10 +13,10 @@ font = "Roboto "
 button_bg = "#808080"
 
 
-class TKCalendar():
+class TKCalendar:
     """ TKinter Calendar """
 
-    def __init__(self, master: RootGUI, callback: callable = None, **kwargs):
+    def __init__(self, master, callback: callable = None, **kwargs):
         super().__init__(**kwargs)
 
         """ Window Attributes """
@@ -51,6 +49,11 @@ class TKCalendar():
         self.style.configure("HF.TFrame", background="white")
         self.style.configure("Month.TLabel", background="white")
         self.style.configure("TFrame", background="white")
+
+        self.style.configure("CodyWork.TButton", background="#F7D8BA", relief=SUNKEN, height=4)
+        self.style.configure("SamWork.TButton", background="#FEFF8DD", relief=SUNKEN, height=4)
+        self.style.configure("BothWork.TButton", background="#C6B6D6", relief=SUNKEN, height=4)
+        self.style.configure("Other.TButton", background="#ACDDDE", relief=SUNKEN, height=4)
 
         """ Helper Classes """
         self.dh = dH()
@@ -147,7 +150,18 @@ class TKCalendar():
                 date_events = EventController.find_by_elements(query)
                 if date_events:
                     categories = [event.category for event in date_events]
-                    EventColor().colorize(button, categories)
+                    self.colorize(button, categories)
+
+    @staticmethod
+    def colorize(button: Button, categories: list):
+        if "C-Work" in categories and "S-Work" in categories:
+            button.configure(style="CodyWork.TButton")
+        if "C-Work" in categories:
+            button.configure(style="CodyWork.TButton")
+        if "S-Work" in categories:
+            button.configure(style="SamWork.TButton")
+        if categories:
+            button.configure(style="Other.TButton")
 
     @staticmethod
     def row_col_configure(master: Tk or Frame, weight: int, col_index: int = 0, row_index: int = 0):
@@ -203,8 +217,3 @@ class TKCalendar():
         messagebox.showinfo(title="Shift Scraper", message="Schedule Scrape Complete!")
 
 
-if __name__ == '__main__':
-    x = Tk()
-    y = RootGUI(x)
-    z = TKCalendar(y)
-    x.mainloop()
