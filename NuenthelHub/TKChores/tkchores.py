@@ -1,5 +1,5 @@
 from functools import partial
-from tkinter import Tk, FLAT, NSEW, GROOVE, StringVar, PhotoImage, DISABLED, ACTIVE, NE, NW, EW, OptionMenu, SUNKEN
+from tkinter import Tk, FLAT, BOTH, NSEW, GROOVE, StringVar, PhotoImage, DISABLED, ACTIVE, NE, NW, EW, OptionMenu, SUNKEN
 from tkinter.ttk import Frame, OptionMenu, Label, Button
 
 from NuenthelHub.TKChores.chore import ChoreController, Chore
@@ -66,6 +66,8 @@ class TKChores:
 
         """ Internal Functions """
         self._make_main_frame()
+        self._make_sidebar_frame()
+        self._make_sidebar_buttons()
         self._make_daily_chore_window()
         self._make_weekly_chore_window()
         self._make_monthly_chore_window()
@@ -78,6 +80,10 @@ class TKChores:
         row_col_configure(self.weekly_chore_frame, 1)
         row_col_configure(self.monthly_chore_frame, 1)
 
+    def repack_module(self):
+        self.main_frame.grid(row=0, column=0, padx=10, pady=10, sticky=NSEW, columnspan=4, rowspan=2)
+        self.sidebar_frame.grid(row=0, column=5, padx=10, pady=10, ipadx=30, sticky=NSEW)
+
     def _make_main_frame(self):
         self.main_frame = Frame(self.master.body_frame)
         self.main_frame.grid(row=0, column=0, padx=10, pady=10, sticky=NSEW, columnspan=4, rowspan=2)
@@ -85,6 +91,14 @@ class TKChores:
     def _make_add_chore_frame(self):
         self.add_chore_frame = Frame(self.main_frame)
         self.add_chore_frame.grid(row=0, column=0, padx=10, pady=10, sticky=NSEW)
+
+    def _make_sidebar_frame(self):
+        self.sidebar_frame = Frame(self.master.body_frame, style="CalMain.TFrame")
+        self.sidebar_frame.grid(row=0, column=5, padx=10, pady=10, ipadx=30, sticky=NSEW)
+
+    def _make_sidebar_buttons(self):
+        return_btn = Button(self.sidebar_frame, text="Return", command=self.return_to_main)
+        return_btn.pack(expand=True, fill=BOTH)
 
     def _make_box_headers(self):
         Button(self.main_frame, text="Daily", style="BG.TButton", command=partial(self._add_chore, "Daily")) \
@@ -226,6 +240,10 @@ class TKChores:
                 self.monthly_chores[args[0]][2].configure(state=ACTIVE)
 
     def _add_chore(self, duration: str):
+        if self.extension:
+            self.extension.main_frame.destroy()
+            self.extension = None
+            return
 
         match duration:
             case "Daily":
@@ -271,3 +289,8 @@ class TKChores:
                 self.monthly_chore_frame.destroy()
                 self._make_daily_chore_window()
                 self._configure_chores(monthly=True)
+
+    def return_to_main(self):
+        self.main_frame.grid_remove()
+        self.sidebar_frame.grid_remove()
+        self.callback()

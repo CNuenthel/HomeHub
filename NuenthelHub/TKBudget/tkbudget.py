@@ -69,6 +69,10 @@ class TKBudget:
         self._configure_rows_cols(self.income_frame)
         self._configure_rows_cols(self.sidebar_frame)
 
+    def repack_module(self):
+        self.main_frame.grid(row=0, column=0, padx=10, pady=10, sticky=NSEW, columnspan=4, rowspan=2)
+        self.sidebar_frame.grid(row=0, column=5, padx=10, pady=10, ipadx=30, sticky=NSEW)
+
     def _make_main_frame(self):
         self.main_frame = Frame(self.master.body_frame)
         self.main_frame.grid(row=0, column=0, padx=10, pady=10, sticky=NSEW, columnspan=4, rowspan=2)

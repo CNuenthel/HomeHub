@@ -45,7 +45,8 @@ class TKCalendar:
 
         self.style.configure("Month.TLabel", background="white")
 
-        self.style.configure("CodyWork.TButton", background="green", relief=SUNKEN, font="Roboto 12 bold")
+        # Color change of styles here require change of color in make_legend method
+        self.style.configure("CodyWork.TButton", background="yellow", relief=SUNKEN, font="Roboto 12 bold")
         self.style.configure("SamWork.TButton", background="orange", relief=SUNKEN, font="Roboto 12 bold")
         self.style.configure("BothWork.TButton", background="red", relief=SUNKEN, font="Roboto 12 bold")
         self.style.configure("Other.TButton", background="purple", relief=SUNKEN, font="Roboto 12 bold")
@@ -73,6 +74,10 @@ class TKCalendar:
         self.row_col_configure(self.day_frame, 1)
         self.row_col_configure(self.main_frame, 1)
         self.row_col_configure(self.legend_frame, 1)
+
+    def repack_module(self):
+        self.main_frame.grid(row=0, column=0, padx=10, pady=10, sticky=NSEW, columnspan=4, rowspan=2)
+        self.sidebar_frame.grid(row=0, column=5, padx=10, pady=10, ipadx=30, sticky=NSEW)
 
     def make_main_frame(self):
         self.main_frame = Frame(self.master.body_frame, style="CalMain.TFrame")
@@ -166,7 +171,7 @@ class TKCalendar:
 
     def make_legend(self):
         """ Creates button representation of colors with category text """
-        colors = ["green", "orange", "red", "purple"]
+        colors = ["yellow", "orange", "red", "purple"]
         categories = ["Cody Works", "Sam Works", "Work Overlap", "Other"]
         for i, j in enumerate(colors):
             legend_style = Style()

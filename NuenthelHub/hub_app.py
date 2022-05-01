@@ -1,5 +1,6 @@
-from tkinter import Tk, NSEW, SUNKEN, BOTH, FLAT, GROOVE, PhotoImage
-from tkinter.ttk import Frame, Style, Button, Label
+from tkinter import Tk, NSEW, SUNKEN, TOP, FLAT, PhotoImage
+from tkinter.ttk import Frame, Style, Button
+from tkinter import font
 
 from TKLevelUp import housemembersrpg as rpg
 from TKCalendar import tkcalendar as tkc
@@ -39,14 +40,14 @@ class RootGUI(Tk):
         self._connect_to_sheets()
 
         """ Styles """
-        self.style = Style()
+        self.style = Style(self)
         self.style.theme_use("clam")
+        self.font = font.Font(family="Roboto", size=20, weight="bold")
 
         # self.mod_styles = Style()
         self.style.configure("Header.TFrame", relief=SUNKEN)
         self.style.configure("Body.TFrame", relief=SUNKEN)
-        self.style.configure("Main.TButton", background="white", width=20, relief=SUNKEN, foreground="black",
-                             font="Roboto 20 bold")
+        self.style.configure("Main.TButton", background="white", width=20, relief=SUNKEN, foreground="black")
         self.style.configure("Sheets.TButton", background="green", relief=FLAT)
         self.style.configure("Tv.TButton", background="green", relief=FLAT)
 
@@ -74,11 +75,14 @@ class RootGUI(Tk):
         self._create_budget_button()
         self._create_shopping_button()
         self._create_chores_button()
-        self._create_todo_button()
+        self._create_tv_button()
         self._create_home_mtn_button()
 
         """ Modules """
         self.calendar = None
+        self.budget = None
+        self.chores = None
+        self.tv_remote = None
 
         """ Configure """
         row_col_configure(self.header_frame, 1, row_config=False)
@@ -105,7 +109,7 @@ class RootGUI(Tk):
     def _create_connection_buttons(self):
         """ Sony Bravia connection visual """
         self.tv_connected_btn = Button(
-            self.header_frame, text=f"TV {self.tv_connected}", style="Tv.TButton")
+            self.header_frame, text=f"TV {self.tv_connected}", style="Tv.TButton", compound=TOP)
         self.tv_connected_btn.grid(row=0, column=1, padx=10, pady=10, sticky=NSEW)
 
         """ Google Sheets connection visual """
@@ -116,46 +120,62 @@ class RootGUI(Tk):
     def _create_calendar_button(self):
         self.cal_png = PhotoImage(file="img/calendar.png")
         self.calendar_button = Button(self.main_button_frame, image=self.cal_png, text="Calendar", style="Main.TButton",
-                                      command=self.show_calendar)
+                                      command=self.show_calendar, compound=TOP)
         self.calendar_button.grid(row=0, column=0, padx=10, pady=10, sticky=NSEW)
 
     def _create_budget_button(self):
         self.bud_png = PhotoImage(file="img/budgeting.png")
         self.budget_button = Button(self.main_button_frame, image=self.bud_png, text="Budget", style="Main.TButton",
-                                    command=self.show_budget)
+                                    command=self.show_budget, compound=TOP)
         self.budget_button.grid(row=0, column=1, padx=10, pady=10, sticky=NSEW)
 
     def _create_shopping_button(self):
         self.shop_png = PhotoImage(file="img/shopping-list.png")
-        self.shopping_button = Button(self.main_button_frame, image=self.shop_png, text="Shopping List", style="Main.TButton")
+        self.shopping_button = Button(self.main_button_frame, image=self.shop_png, text="Shopping List", style="Main.TButton", compound=TOP)
         self.shopping_button.grid(row=0, column=2, padx=10, pady=10, sticky=NSEW)
 
     def _create_chores_button(self):
         self.chore_png = PhotoImage(file="img/bucket.png")
-        self.chores_button = Button(self.main_button_frame, image=self.chore_png, text="Chores", style="Main.TButton", command=self.show_chores)
+        self.chores_button = Button(self.main_button_frame, image=self.chore_png, text="Chores", style="Main.TButton", command=self.show_chores, compound=TOP)
         self.chores_button.grid(row=0, column=3, padx=10, pady=10, sticky=NSEW)
 
-    def _create_todo_button(self):
-        self.todo_button = Button(self.main_button_frame, text="To Do", style="Main.TButton")
-        self.todo_button.grid(row=1, column=0, padx=10, pady=10, sticky=NSEW)
+    def _create_tv_button(self):
+        self.tv_png = PhotoImage(file="img/tv.png")
+        self.tv_button = Button(self.main_button_frame, image=self.tv_png, text="Sony Bravia", style="Main.TButton", compound=TOP)
+        self.tv_button.grid(row=1, column=0, padx=10, pady=10, sticky=NSEW)
 
     def _create_home_mtn_button(self):
         self.mtn_png = PhotoImage(file="img/maintenance.png")
-        self.home_mtn_button = Button(self.main_button_frame, image=self.mtn_png, text="Home Mtn", style="Main.TButton")
+        self.home_mtn_button = Button(self.main_button_frame, image=self.mtn_png, style="Main.TButton", compound=TOP, text="Home Mtn")
         self.home_mtn_button.grid(row=1, column=1, padx=10, pady=10, sticky=NSEW)
 
     """ _____________ Button Commands _______________________________________________________________________________"""
 
     def show_calendar(self):
         self._sweep_widgets()
+
+        if self.calendar:
+            self.calendar.repack_module()
+            return
+
         self.calendar = tkc.TKCalendar(master=self, style=self.style, callback=self._repack_main)
 
     def show_budget(self):
         self._sweep_widgets()
+
+        if self.budget:
+            self.budget.repack_module()
+            return
+
         self.budget = tkb.TKBudget(master=self, style=self.style, sheets_connect=self.sheets_connect, callback=self._repack_main)
 
     def show_chores(self):
         self._sweep_widgets()
+
+        if self.chores:
+            self.chores.repack_module()
+            return
+
         self.chores = tkchore.TKChores(master=self, style=self.style, callback=self._repack_main)
 
 
