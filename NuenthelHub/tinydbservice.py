@@ -26,27 +26,24 @@ class TinyDbService(Generic[T]):
         """ Instantiate db and model """
         self.db = db
         self.modelClass = modelClass
+        self.queryClass = Query()
         self.logs = []
 
     def find_all(self):
         """Fetch all documents from tinydb"""
         return [self.marshall(d) for d in self.db.all()]
 
-    def find_by_element(self, elementKey: str, elementValue: str) -> T:
+    def find_by_element(self, elementKey: str, elementValue: str) -> T or None:
         """Return document matching a single key/value"""
-        self.modelClass = Query()
-        return self.db.search(getattr(self.modelClass, elementKey) == elementValue)
+        doc_list = self.db.search(getattr(self.queryClass, elementKey) == elementValue)
+        return [self.marshall(doc) for doc in doc_list]
 
     def find_by_elements(self, query_dict: dict) -> List[T]:
         """Returns a document meeting all key/values of query dict"""
         return [self.marshall(doc) for doc in self.db.all() if query_dict.items() <= doc.items()]
 
-    def insert(self, document: T, force=False):
+    def insert(self, document: T):
         """Insert a document, returns the updated document"""
-        if force:
-            id = self.db.insert(vars(document))
-            document.id = id
-            return document
         if vars(document) not in [vars(self.marshall(doc)) for doc in self.db.all()]:
             id = self.db.insert(vars(document))
             document.id = id

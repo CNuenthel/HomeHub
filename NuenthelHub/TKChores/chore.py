@@ -10,6 +10,7 @@ class Chore:
     name: str = "Chore"
     complete: bool = False
     category: str = None
+    last_completed_by: str = "Select"
     id: int = None
 
     def __repr__(self):
