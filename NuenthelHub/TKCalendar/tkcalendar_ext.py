@@ -1,5 +1,5 @@
 from tkinter import Tk, Toplevel, E, NSEW, PhotoImage, CENTER, END, FLAT, GROOVE, S
-from tkinter.ttk import Combobox, Style, Label, Frame, Button
+from tkinter.ttk import Combobox, Label, Frame, Button
 
 from NuenthelHub.TKCalendar.event import Event, EventController
 from NuenthelHub.supportmodules.modifiedwidgets import NumberOnlyCombobox, TextFilledEntry
@@ -37,7 +37,7 @@ class TKAddEventExtension:
 
     """
 
-    def __init__(self, root_window: Tk or Toplevel, day: int, month: int, year: int, callback: callable = None):
+    def __init__(self, root_window: Tk or Toplevel, day: int, month: int, year: int, style, callback: callable = None):
         """ Extension Attributes """
         self.root = root_window
         self.day = day
@@ -49,14 +49,13 @@ class TKAddEventExtension:
         self.add_style = None
 
         """ Styling """
-        self.style = Style(self.root)
+        self.style = style
         self.style.configure("AddMainBorder.TFrame", background="#333333")
         self.style.configure("AddMain.TFrame", background="#777777")
         self.style.configure("AddExt.TLabel", background="#777777")
         self.style.configure("ReqInfo.TCombobox", fieldbackground="white", background="white")
         self.style.configure("Category.TCombobox", background="white")
         self.style.configure("AddCancel.TButton", background="white", relief=GROOVE)
-        self.style.configure("AddConfirm.TLabel", background="white")
         self.style.configure("ReqInfo.TLabel", background="white", foreground="red")
         self.style.configure("ReqInfoRed.TCombobox", fieldbackground="red", background="white")
         self.style.configure("ReqInfoNorm.TCombobox", fieldbackground="white", background="white")
@@ -100,15 +99,15 @@ class TKAddEventExtension:
         hour_nums = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13,
                      14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24]
 
-        self.hour_selector = NumberOnlyCombobox(time_frame, "Hour", 2, values=hour_nums, justify=CENTER,
-                                                background="white", style="ReqInfo.TCombobox")
+        self.hour_selector = NumberOnlyCombobox(time_frame, self.style, "Hour", 2, values=hour_nums, justify=CENTER,
+                                                background="white")
         self.hour_selector.set("Hour")
         self.hour_selector.grid(row=0, column=0)
 
         minute_nums = ["00"]
         minute_nums.extend([str(num * 10) for num in range(1, 6)])
-        self.minute_selector = NumberOnlyCombobox(time_frame, "Minutes", 2, values=minute_nums, justify=CENTER,
-                                                  background="white", style="ReqInfo.TCombobox")
+        self.minute_selector = NumberOnlyCombobox(time_frame, self.style, "Minutes", 2, values=minute_nums, justify=CENTER,
+                                                  background="white")
         self.minute_selector.set("00")
         self.minute_selector.grid(row=0, column=1, sticky=E)
 
@@ -162,7 +161,7 @@ class TKAddEventExtension:
         if ev_dict["time_hours"] == "Hour" or ev_dict["time_minutes"] == "Minutes" or ev_dict["title"] == "Title":
             # Change required widgets red to show edit reqs
             self.style.configure("ReqInfo.TCombobox", fieldbackground="red")
-            self.root.style.configure("ReqInfo.TEntry", background="red")
+            self.style.configure("ReqInfo.TEntry", background="red")
 
             self.warning = Label(self.border_frame, text="Please fill in required information.", style="ReqInfo.TLabel",
                                  font="Roboto 13")
@@ -171,7 +170,7 @@ class TKAddEventExtension:
 
         """ Reconfigure red zones if triggered """
         self.style.configure("ReqInfo.TCombobox", fieldbackground="white")
-        self.root.style.configure("ReqInfo.TEntry", background="white")
+        self.style.configure("ReqInfo.TEntry", background="white")
 
         e = Event.create_from_dict(ev_dict)
 
@@ -214,7 +213,7 @@ class TKChangeEvent:
 
     """
 
-    def __init__(self, root_window: Tk or Toplevel, id: int, callback: callable = None):
+    def __init__(self, root_window: Tk or Toplevel, id: int, style, callback: callable = None):
         """ Extension Attributes """
         self.root = root_window
         self.id = id
@@ -228,15 +227,13 @@ class TKChangeEvent:
         self.deny = None
 
         """ Styling """
-        self.style = Style(self.root)
-        self.style.theme_use("winnative")
+        self.style = style
         self.style.configure("AddMainBorder.TFrame", background="#333333")
         self.style.configure("AddMain.TFrame", background="#777777")
         self.style.configure("AddExt.TLabel", background="#777777")
         self.style.configure("ReqInfo.TCombobox", fieldbackground="white", background="white")
         self.style.configure("Category.TCombobox", background="white")
         self.style.configure("AddCancel.TButton", background="white", relief=GROOVE)
-        self.style.configure("AddConfirm.TLabel", background="white")
         self.style.configure("ReqInfo.TLabel", background="white", foreground="red")
         self.style.configure("ReqInfoRed.TCombobox", fieldbackground="red", background="white")
         self.style.configure("ReqInfoNorm.TCombobox", fieldbackground="white", background="white")
@@ -284,15 +281,15 @@ class TKChangeEvent:
         hour_nums = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13,
                      14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24]
 
-        self.hour_selector = NumberOnlyCombobox(time_frame, "Hour", 2, values=hour_nums, justify=CENTER,
-                                                background="white", style="ReqInfo.TCombobox")
+        self.hour_selector = NumberOnlyCombobox(time_frame, self.style, "Hour", 2, values=hour_nums, justify=CENTER,
+                                                background="white")
         self.hour_selector.set("Hour")
         self.hour_selector.grid(row=0, column=0)
 
         minute_nums = ["00"]
         minute_nums.extend([str(num * 10) for num in range(1, 6)])
-        self.minute_selector = NumberOnlyCombobox(time_frame, "Minutes", 2, values=minute_nums, justify=CENTER,
-                                                  background="white", style="ReqInfo.TCombobox")
+        self.minute_selector = NumberOnlyCombobox(time_frame, self.style, "Minutes", 2, values=minute_nums, justify=CENTER,
+                                                  background="white")
         self.minute_selector.set("00")
         self.minute_selector.grid(row=0, column=1, sticky=E)
 
@@ -376,15 +373,15 @@ class TKChangeEvent:
 
         """ Reconfigure red zones if triggered """
         self.title_entry.configure(style="TEntry")
-        self.root.style.configure("ReqInfo.TCombobox", fieldbackground="white", background="white")
+        self.style.configure("ReqInfo.TCombobox", fieldbackground="white", background="white")
 
         event = Event.create_from_dict(ev_dict)
 
         self.main_frame.destroy()
         if EventController.update_doc(event, self.id):
-            self.root.confirmation = Label(self.root, text="Event Updated!", font="Roboto 10")
+            self.root.confirmation = Label(self.root, text="Event Updated!", font="Roboto 10", style="AddConfirm.TLabel")
         else:
-            self.root.confirmation = Label(self.root, text="Sorry, something went wrong...", font="Roboto 10")
+            self.root.confirmation = Label(self.root, text="Sorry, something went wrong...", font="Roboto 10", style="AddConfirm.TLabel")
 
         self.root.confirmation.grid(row=self.grid_row_start + 1, column=1, pady=10)
         self.root.extension = None

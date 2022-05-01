@@ -4,6 +4,7 @@ from tkinter.ttk import Frame, Style, Button, Label
 from TKLevelUp import housemembersrpg as rpg
 from TKCalendar import tkcalendar as tkc
 from TKBudget import tkbudget as tkb
+from TKBudget.nuenthelsheetdata import NuenthelSheetsData
 
 
 def row_col_configure(master: Tk or Frame, weight: int, col_index: int = 0, row_index: int = 0, row_config: bool = True,
@@ -34,9 +35,10 @@ class RootGUI(Tk):
         """ GUI Connections """
         self.tv_connected = "Disconnected"
         self.budget_connected = "Disconnected"
+        self._connect_to_sheets()
 
         """ Styles """
-        self.style = Style(self)
+        self.style = Style()
         self.style.theme_use("clam")
 
         # self.mod_styles = Style()
@@ -91,6 +93,10 @@ class RootGUI(Tk):
     def _repack_main(self):
         self.main_button_frame.grid(row=0, column=0, sticky=NSEW)
 
+    def _connect_to_sheets(self):
+        self.sheets_connect = NuenthelSheetsData("N-Fam 2022")
+        self.budget_connected = "Connected"
+
     def _create_main_button_frame(self):
         self.main_button_frame = Frame(self.body_frame)
         self.main_button_frame.grid(row=0, column=0, sticky=NSEW)
@@ -141,11 +147,12 @@ class RootGUI(Tk):
 
     def show_calendar(self):
         self._sweep_widgets()
-        self.calendar = tkc.TKCalendar(self, callback=self._repack_main)
+        self.calendar = tkc.TKCalendar(master=self, style=self.style, callback=self._repack_main)
 
     def show_budget(self):
         self._sweep_widgets()
-        self.budget = tkb.TKBudget(self.body_frame, callback=self._repack_main)
+        self.budget = tkb.TKBudget(master=self, style=self.style, sheets_connect=self.sheets_connect, callback=self._repack_main)
+
 
 if __name__ == '__main__':
     RootGUI().mainloop()

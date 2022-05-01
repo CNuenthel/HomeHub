@@ -18,7 +18,7 @@ from NuenthelHub.TKCalendar.img.imgpath import image_path
 class DayTopWindow(Toplevel):
     """ Toplevel class for event operations on the TKCalendar """
 
-    def __init__(self, day: int, month: int, year: int, callback: callable = None):
+    def __init__(self, day: int, month: int, year: int, style, callback: callable = None):
         super().__init__()
 
         """ Window Attributes """
@@ -37,10 +37,10 @@ class DayTopWindow(Toplevel):
         self.year = year
 
         """ Styling """
-        self.style = Style()
-        self.style.theme_use("clam")
+        self.style = style
         self.style.configure("HoverButton.TButton", background="#BDC1BE", relief=FLAT, foreground="black")
         self.style.configure("DtpLevel.TLabel", background="#e5e4e2", relief=FLAT, foreground="black")
+        self.style.configure("AddConfirm.TLabel", background="#e5e4e2")
 
         """ Internal Functions """
         self._make_header()
@@ -150,7 +150,7 @@ class DayTopWindow(Toplevel):
             self.extension.main_frame.destroy()
 
         self.confirmation.destroy() if self.confirmation else None  # Destroy previous confirmations
-        self.extension = TKAddEventExtension(self, self.day, self.month, self.year, self._configure_event_box)
+        self.extension = TKAddEventExtension(self, self.day, self.month, self.year, self.style, self._configure_event_box)
 
     def remove_event(self):
         """ Removes selected event from event database """
@@ -176,10 +176,10 @@ class DayTopWindow(Toplevel):
 
             # Remove Event and confirm or advise of error
             if EventController.remove_doc(int_id):
-                self.confirmation = Label(self, text="Event Removed", font="Courier 10")
+                self.confirmation = Label(self, text="Event Removed", font="Courier 10", style="AddConfirm.TLabel")
             else:
                 self.confirmation = Label(self, text="Sorry, something went wrong...",
-                                               font="Courier 10")
+                                               font="Courier 10", style="AddConfirm.TLabel")
 
             # Place confirmation and configure change to event box
             self.confirmation.grid(row=6, column=1, pady=10)
@@ -209,4 +209,4 @@ class DayTopWindow(Toplevel):
 
             # Confirm extension creation
             int_id = int(selection.split(" ")[-1][1:-1])  # Get event ID
-            self.extension = TKChangeEvent(self, int_id, self._configure_event_box)  # Create extension
+            self.extension = TKChangeEvent(self, int_id, self.style, self._configure_event_box)  # Create extension

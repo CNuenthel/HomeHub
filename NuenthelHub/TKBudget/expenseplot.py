@@ -26,8 +26,7 @@ class ExpensePlot:
                 self.color_list.append("red")
 
     def _create_figure(self):
-        self.figure = plt.Figure(figsize=(5, 3), dpi=50)
-        plt.rcParams.update({"axes.labelsize": 25})
+        self.figure = plt.Figure(figsize=(5, 3), dpi=30)
         self.figure.add_subplot(111).bar(self.x_coords, self.y_axis, tick_label=self.x_axis,
                                          width=0.5, color=self.color_list)
 

@@ -1,6 +1,6 @@
 from datetime import datetime
 from functools import partial
-from tkinter import BOTH, CENTER, SUNKEN, NSEW, DISABLED, NORMAL, FLAT, Tk, messagebox, EW, SE, SW, S
+from tkinter import BOTH, CENTER, SUNKEN, NSEW, DISABLED, NORMAL, FLAT, Tk, messagebox, EW, SE, SW, S, RIDGE
 from tkinter.ttk import Frame, Label, Button, Style
 
 from NuenthelHub.TKCalendar.datehandler import DateHandler as dH
@@ -12,7 +12,7 @@ from NuenthelHub.supportmodules.schedulescraper import CodyWorkSchedule
 class TKCalendar:
     """ TKinter Calendar """
 
-    def __init__(self, master, callback: callable = None, **kwargs):
+    def __init__(self, master, style, callback: callable = None, **kwargs):
         super().__init__(**kwargs)
 
         """ Window Attributes """
@@ -31,16 +31,17 @@ class TKCalendar:
         self.legend_up = False
 
         """ Styling """
-        self.style = Style()
+        self.style = style
         self.style.configure("Legend.TButton", relief=FLAT)
 
         # Add Event Extension Styling
-        self.style.configure("CalMain.TFrame", background="white")
+        self.style.configure("CalMain.TFrame", background="white", relief=FLAT)
         self.style.configure("AddCancel.TButton", relief=FLAT, background="#BDC1BE")
         self.style.configure("Wkdy.TLabel", background="white")
         self.style.configure("Day.TButton", background="white", font="Roboto 12 bold")
         self.style.configure("CurrentDay.TButton", background="green", font="Roboto 12 bold")
         self.style.configure("DisDate.TButton", background="#999999")
+        self.style.configure("MonthAdjust.TButton", relief=FLAT)
 
         self.style.configure("Month.TLabel", background="white")
 
@@ -228,9 +229,9 @@ class TKCalendar:
         """ Opens top window for event interaction, destroys previous top window"""
         try:
             self.toplevel.destroy()
-            self.toplevel = DayTopWindow(day_num, self.month, self.year, self.event_color_buttons)
+            self.toplevel = DayTopWindow(day_num, self.month, self.year, self.style, self.event_color_buttons)
         except AttributeError:
-            self.toplevel = DayTopWindow(day_num, self.month, self.year, self.event_color_buttons)
+            self.toplevel = DayTopWindow(day_num, self.month, self.year, self.style, self.event_color_buttons)
 
     def open_legend(self):
         """ Opens legend sidebar extension """

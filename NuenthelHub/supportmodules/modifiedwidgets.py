@@ -96,11 +96,10 @@ class NumberOnlyCombobox(Combobox):
 
     """
 
-    def __init__(self, master: Tk or Toplevel, base_value: str or int, max_length: int = None, **kw):
+    def __init__(self, master: Tk or Toplevel, style, base_value: str or int, max_length: int = None, **kw):
         """ Constructs a Tkinter Entry """
         super().__init__(master=master, **kw)
-        self.style = Style()
-        self.style.theme_use("clam")
+        self.style = style
         self.max_length = max_length
         self.base_value = base_value
 
@@ -118,7 +117,7 @@ class NumberOnlyCombobox(Combobox):
                 desired widget background color, accepts hexadecimal
                 default: white
         """
-        self.style.configure("TCombobox", fieldbackground=fbg, background=bg)
+        self.style.configure("Number.TCombobox", fieldbackground=fbg, background=bg)
 
     def _check_value(self, e):
         """
