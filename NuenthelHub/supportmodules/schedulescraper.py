@@ -120,7 +120,7 @@ class CodyWorkSchedule:
                     "month": self.months[i],
                     "day": self.days[i],
                     "time_hours": self.shifts[i],
-                    "time_minutes": 0,
+                    "time_minutes": "00",
                     "category": "c-work",
                     "title": "C-Work"
                 }

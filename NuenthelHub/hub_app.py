@@ -5,6 +5,7 @@ from TKLevelUp import housemembersrpg as rpg
 from TKCalendar import tkcalendar as tkc
 from TKBudget import tkbudget as tkb
 from TKBudget.nuenthelsheetdata import NuenthelSheetsData
+from TKChores import tkchores as tkchore
 
 
 def row_col_configure(master: Tk or Frame, weight: int, col_index: int = 0, row_index: int = 0, row_config: bool = True,
@@ -131,7 +132,7 @@ class RootGUI(Tk):
 
     def _create_chores_button(self):
         self.chore_png = PhotoImage(file="img/bucket.png")
-        self.chores_button = Button(self.main_button_frame, image=self.chore_png, text="Chores", style="Main.TButton")
+        self.chores_button = Button(self.main_button_frame, image=self.chore_png, text="Chores", style="Main.TButton", command=self.show_chores)
         self.chores_button.grid(row=0, column=3, padx=10, pady=10, sticky=NSEW)
 
     def _create_todo_button(self):
@@ -152,6 +153,10 @@ class RootGUI(Tk):
     def show_budget(self):
         self._sweep_widgets()
         self.budget = tkb.TKBudget(master=self, style=self.style, sheets_connect=self.sheets_connect, callback=self._repack_main)
+
+    def show_chores(self):
+        self._sweep_widgets()
+        self.chores = tkchore.TKChores(master=self, style=self.style, callback=self._repack_main)
 
 
 if __name__ == '__main__':

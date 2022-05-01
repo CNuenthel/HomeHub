@@ -1,13 +1,14 @@
 """
 Chore Model
 """
+from tinydb import TinyDB
+from NuenthelHub.tinydbservice import TinyDbService
 
 
 class Chore:
     """ Models a chore """
-    name: str = None
+    name: str = "Chore"
     complete: bool = False
-    last_completed_by: str = None
     category: str = None
     id: int = None
 
@@ -29,3 +30,6 @@ class Chore:
             setattr(chore, k, v)
         return chore
 
+
+"""Controller for managing chores"""
+ChoreController = TinyDbService[Chore](TinyDB("choredb.json"), Chore)

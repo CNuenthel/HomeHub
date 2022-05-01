@@ -171,8 +171,8 @@ class TKCalendar:
         for i, j in enumerate(colors):
             legend_style = Style()
             legend_style.configure(f"{j}.TButton", background=j, relief=FLAT)
-            Button(self.legend_frame, text=categories[i], style=f"{j}.TButton").grid(row=i, column=0, sticky=NSEW, pady=10,
-                                                                                padx=10)
+            Button(self.legend_frame, text=categories[i], style=f"{j}.TButton")\
+                .grid(row=i, column=0, sticky=NSEW, pady=10, padx=10)
 
     @staticmethod
     def colorize(button: Button, categories: list):

@@ -47,7 +47,7 @@ class TinyDbService(Generic[T]):
             id = self.db.insert(vars(document))
             document.id = id
             return document
-        if vars(document) not in [vars(self.marshall_no_id(doc)) for doc in self.db.all()]:
+        if vars(document) not in [vars(self.marshall(doc)) for doc in self.db.all()]:
             id = self.db.insert(vars(document))
             document.id = id
             return document

@@ -1,8 +1,8 @@
-from tkinter import Tk, Toplevel, NSEW, PhotoImage, CENTER
+from tkinter import NSEW, PhotoImage, CENTER
 from tkinter.ttk import Combobox, Frame, Button, Label
 
-from NuenthelHub.TKChores.chores.chore import Chore
-from NuenthelHub.TKChores.chores.choredbcontroller import ChoreController
+from TKChores.chore import Chore
+from NuenthelHub.TKChores.chore import ChoreController
 from NuenthelHub.TKChores.img.image_path import image_path
 from NuenthelHub.supportmodules.modifiedwidgets import TextFilledEntry
 
@@ -21,9 +21,6 @@ class TKAddChoreExtension:
         self.grid_row_start = root_frame.grid_size()[1]
         self.column_count = root_frame.grid_size()[0]
         self.callback = callback
-
-        """ DB Handler """
-        self.db = ChoreController
 
         """ Internal Functions """
         self._create_main_frame()
@@ -78,23 +75,21 @@ class TKAddChoreExtension:
 
     def _add_chore(self):
         """ Add event to DB """
-        print("adding")
         name = self.title_entry.get()
         category = self.category_selector.get()
 
         if name and category != "Category":
-            data = {
-                "name": name,
-                "category": category,
-                "last_completed_by": None,
-                "complete": False
-            }
-
-            chore = Chore().create_from_dict(data)
+            chore = Chore()
+            chore.name = name
+            chore.category = category
+            chore.last_completed_by = None
+            chore.complete = False
 
             self.main_frame.destroy()
 
-            if self.db.insert(chore, force=True):
+            result = ChoreController.insert(chore, force=True)
+            print(result)
+            if result:
                 self.root.confirmation = Label(self.root, text="Chore Added!", font="Courier 10", justify=CENTER)
             else:
                 self.root.confirmation = Label(self.root, text="Sorry, something went wrong...", font="Courier 10",
@@ -107,4 +102,4 @@ class TKAddChoreExtension:
     def _cancel_event(self):
         """ Destroy add event extension """
         self.main_frame.destroy()
-        self.main.extension = None
+        self.root.extension = None

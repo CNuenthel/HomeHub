@@ -47,9 +47,12 @@ class TKBudget:
         self.style.configure("YelCumulate.TButton", font="Roboto 12", background="#f9fdcc")
         self.style.configure("OrgCumulate.TButton", font="Roboto 12", background="#fdf1cc")
         self.style.configure("RedCumulate.TButton", font="Roboto 12", background="#fdd0cc")
+        self.style.configure("Cumulate.TButton", font="Roboto 12")
 
         """ GUI Constructor Functions """
         self._make_main_frame()
+        self._make_sidebar_frame()
+        self._make_sidebar_buttons()
         self._make_expenses()
         self._make_graph()
         self._make_recent()
@@ -64,10 +67,19 @@ class TKBudget:
         self._configure_rows_cols(self.expense_frame)
         self._configure_rows_cols(self.recent_frame)
         self._configure_rows_cols(self.income_frame)
+        self._configure_rows_cols(self.sidebar_frame)
 
     def _make_main_frame(self):
         self.main_frame = Frame(self.master.body_frame)
         self.main_frame.grid(row=0, column=0, padx=10, pady=10, sticky=NSEW, columnspan=4, rowspan=2)
+
+    def _make_sidebar_frame(self):
+        self.sidebar_frame = Frame(self.master.body_frame)
+        self.sidebar_frame.grid(row=0, column=5, padx=10, pady=10, ipadx=30, sticky=NSEW)
+
+    def _make_sidebar_buttons(self):
+        return_btn = ttk.Button(self.sidebar_frame, text="Return", command=self.return_to_main)
+        return_btn.pack(expand=True, fill=BOTH)
 
     def _make_expenses(self):
         self.expense_frame = Frame(self.main_frame, background="white", borderwidth=3, relief=GROOVE)
@@ -103,8 +115,8 @@ class TKBudget:
         labels = ["Cody", "Sam", "Other"]
         commands = [partial(self.cumulate_income, i) for i in range(3)]
         for i, j in enumerate(labels):
-            ttk.Button(self.income_frame, text=j, command=commands[i]).grid(row=i, column=0, pady=5, padx=5, sticky=NSEW)
-            se = SnapbackEntry(self.income_frame, font="Roboto " + "9 italic", justify=CENTER)
+            ttk.Button(self.income_frame, text=j, command=commands[i], style="Cumulate.TButton").grid(row=i, column=0, pady=5, padx=5, sticky=NSEW)
+            se = SnapbackEntry(self.income_frame, font="Roboto " + "15 italic", justify=CENTER)
             se.grid(row=i, column=1, pady=5, padx=5, sticky=NSEW)
             self.income_entries.append(se)
 
@@ -116,7 +128,7 @@ class TKBudget:
         self.graph_frame = Frame(self.main_frame, background="white", borderwidth=3, relief=GROOVE)
         self.graph_frame.grid(row=1, column=0, sticky=NSEW, padx=5, pady=5)
 
-        figure = ExpensePlot().get_plot()
+        figure = ExpensePlot(self.nfsheet).get_plot()
         bar_graph = FigureCanvasTkAgg(figure, self.graph_frame)
         bar_graph.get_tk_widget().pack(padx=10, pady=10, expand=True, fill=BOTH)
 
@@ -197,6 +209,7 @@ class TKBudget:
         if self.income_entries[column].current_text is not None:
             value = float(self.income_entries[column].get())
             str_repr = "Err"  # placeholder to show err if unmatched col
+
             match column:
                 case 0:
                     self.nfsheet.update_dollar_format_cell(value, "C56")
@@ -212,4 +225,7 @@ class TKBudget:
             self._configure_incomes()
             self._make_graph()
 
-
+    def return_to_main(self):
+        self.main_frame.grid_remove()
+        self.sidebar_frame.grid_remove()
+        self.callback()

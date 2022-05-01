@@ -1,10 +1,9 @@
 import matplotlib.pyplot as plt
-from TKBudget.nuenthelsheetdata import NuenthelSheetsData
 
 
 class ExpensePlot:
-    def __init__(self):
-        self.expense_data = NuenthelSheetsData("N-Fam 2022").get_expense_data()
+    def __init__(self, sheets_connect):
+        self.expense_data = sheets_connect.get_expense_data()
         self.x_axis = [key[:3] for key in self.expense_data]
         self.y_axis = [int(self.expense_data[key][0]["perc"]) for key in self.expense_data]
         self.x_coords = [i for i, _ in enumerate(self.x_axis)]
@@ -26,14 +25,14 @@ class ExpensePlot:
                 self.color_list.append("red")
 
     def _create_figure(self):
-        self.figure = plt.Figure(figsize=(5, 3), dpi=30)
+        self.figure = plt.Figure(figsize=(5, 3), dpi=100)
+        ax = plt.subplot()
+        ax.set_title("Budget Consumed (%)", pad=15, weight="bold")
         self.figure.add_subplot(111).bar(self.x_coords, self.y_axis, tick_label=self.x_axis,
                                          width=0.5, color=self.color_list)
 
     def get_plot(self):
         return self.figure
 
-    def show_plot(self):
-        self.show_plot()
 
 
