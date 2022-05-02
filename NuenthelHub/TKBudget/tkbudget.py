@@ -2,9 +2,9 @@ from functools import partial
 from tkinter import Frame, Tk, NSEW, CENTER, FLAT, Label, GROOVE, W, EW, BOTH, END, Button
 from tkinter import ttk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-
 from TKBudget.expenseplot import ExpensePlot
 from supportmodules.modifiedwidgets import HoverLabel, SnapbackEntry
+import asyncio
 
 
 def row_col_configure(master: Tk or Frame, weight: int, col_index: int = 0, row_index: int = 0, row_config: bool = True,
@@ -19,13 +19,18 @@ def row_col_configure(master: Tk or Frame, weight: int, col_index: int = 0, row_
 
 
 class TKBudget:
-    """ Creates a top level GUI for budget handling """
+    """ Creates a top level GUI for budget handling
+
+    This class is aware that param master has the attribute body_frame
+
+    """
 
     def __init__(self, master, sheets_connect, style, callback: callable = None):
         super().__init__()
         """ Window Attributes """
         self.master = master
         self.callback = callback
+        self.graph_frame = None
 
         """ External Helper Classes """
         self.nfsheet = sheets_connect
@@ -39,7 +44,6 @@ class TKBudget:
         self.income_buttons = []
         self.budget_entry = None
         self.used_entry = None
-        self.graph = None
 
         """ Styling """
         self.style = style
@@ -54,16 +58,15 @@ class TKBudget:
         self._make_sidebar_frame()
         self._make_sidebar_buttons()
         self._make_expenses()
-        self._make_graph()
+        # self._make_graph()
         self._make_recent()
         self._make_income()
 
         """ GUI Configuration Functions """
-        self._configure_expense_colors()
         self._update_expense_entries()
-        self._configure_incomes()
+        self._configure_expense_colors()
+        self.populate()
         self._configure_rows_cols(self.main_frame)
-        self._configure_rows_cols(self.graph_frame)
         self._configure_rows_cols(self.expense_frame)
         self._configure_rows_cols(self.recent_frame)
         self._configure_rows_cols(self.income_frame)
@@ -90,10 +93,10 @@ class TKBudget:
         self.expense_frame.grid(row=0, column=0, columnspan=3, sticky=NSEW, padx=10, pady=10)
 
         labels = ["Dining", "Grocery", "Transport", "Recreation", "Personal", "J&L", "Other"]
-        commands = [partial(self.cumulate_expense, i) for i in range(7)]
 
         for i, j in enumerate(labels):
-            btn = ttk.Button(self.expense_frame, text=j, command=commands[i], style="Cumulate.TButton")
+
+            btn = ttk.Button(self.expense_frame, text=j, command=partial(self.cumulate_expense, i), style="Cumulate.TButton")
             btn.grid(row=0, column=i+1, padx=5, pady=5, sticky=NSEW)
             self.expense_labels.append(btn)
 
@@ -124,17 +127,21 @@ class TKBudget:
             se.grid(row=i, column=1, pady=5, padx=5, sticky=NSEW)
             self.income_entries.append(se)
 
-    def _make_graph(self):
-        if self.graph:
-            self.graph_frame.destroy()
-
-        self.graph = True
+    def thread_graph(self):
         self.graph_frame = Frame(self.main_frame, background="white", borderwidth=3, relief=GROOVE)
         self.graph_frame.grid(row=1, column=0, sticky=NSEW, padx=5, pady=5)
 
-        figure = ExpensePlot(self.nfsheet).get_plot()
+        expense_data = asyncio.run(self.nfsheet.get_expense_data())
+        figure = ExpensePlot(expense_data).get_plot()
         bar_graph = FigureCanvasTkAgg(figure, self.graph_frame)
         bar_graph.get_tk_widget().pack(padx=10, pady=10, expand=True, fill=BOTH)
+        self._configure_rows_cols(self.graph_frame)
+
+    def _make_graph(self):
+        if self.graph_frame:
+            self.graph_frame.destroy()
+
+        self.master.after(100, self.thread_graph)
 
     # """_______________These configurations are specific to my family budget sheet__________________________________"""
 
@@ -177,7 +184,7 @@ class TKBudget:
         for i, j in enumerate(self.expense_entries):
             j.delete(0, END)
             j.insert(0, value_list[i])
-        self._make_graph()
+        # self._make_graph()
 
     def _configure_recents(self, expense_class, value):
         for i in range(len(self.recents) - 1, -1, -1):
@@ -185,16 +192,22 @@ class TKBudget:
 
         self.recents[0]["text"] = f"[{expense_class}] ${value}"
 
-    def _configure_incomes(self):
+    async def _configure_incomes(self):
         """ Fill income entries with corresponding budget cells """
-        income_cell_values = [  # Cody's, Sam's, Other's
-            self.nfsheet.get_cell_dollar_data("C56"),
-            self.nfsheet.get_cell_dollar_data("C57"),
-            self.nfsheet.get_cell_dollar_data("C58")]
+        async def get_income_cell_values():
+            cody, sam, other = await asyncio.gather(
+                self.nfsheet.get_cell_dollar_data("C56"),
+                self.nfsheet.get_cell_dollar_data("C57"),
+                self.nfsheet.get_cell_dollar_data("C58"))
+            return [cody, sam, other]
 
+        income_cell_values = await get_income_cell_values()
         for i, j in enumerate(self.income_entries):
             j.delete(0, END)
             j.insert(0, income_cell_values[i])
+
+    def populate(self):
+        asyncio.run(self._configure_incomes())
 
     # ___________________Button Functions_______________________________________________________________________________
 
@@ -206,7 +219,7 @@ class TKBudget:
             self._update_expense_entries()  # Recalculate and show expense entries
             self.expense_entries[column].current_text = None  # Reset entry attribute current text to none
             self._configure_recents(self.expense_labels[column].cget("text"), value)  # add expense to recent expenses
-            self._make_graph()
+            # self._make_graph()
 
     def cumulate_income(self, column):
         """ Cumulate income for Cody,Sam,Other entries """
@@ -216,18 +229,18 @@ class TKBudget:
 
             match column:
                 case 0:
-                    self.nfsheet.update_dollar_format_cell(value, "C56")
+                    self.nfsheet.cumulate_dollar_format_cell(value, "C56")
                     str_repr = "CInc"
                 case 1:
-                    self.nfsheet.update_dollar_format_cell(value, "C57")
+                    self.nfsheet.cumulate_dollar_format_cell(value, "C57")
                     str_repr = "SInc"
                 case 2:
-                    self.nfsheet.update_dollar_format_cell(value, "C58")
+                    self.nfsheet.cumulate_dollar_format_cell(value, "C58")
                     str_repr = "OInc"
 
             self._configure_recents(str_repr, value)
             self._configure_incomes()
-            self._make_graph()
+            # self._make_graph()
 
     def return_to_main(self):
         self.main_frame.grid_remove()

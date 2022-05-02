@@ -126,7 +126,6 @@ class TKChores:
 
     def _create_chore_widgets(self, master: Frame, om_command: callable, btn_command: callable, rmv_command: callable,
                               chore_list_out: list, i: int, chore: Chore):
-        print(master)
         if chore.complete:
             lbl_style = "Grn.TLabel"
             state = DISABLED
@@ -222,6 +221,9 @@ class TKChores:
         ChoreController.update_doc(chore, chore.id)
 
     def _bind_complete_btn_state_to_om(self, *args):
+        print(self.daily_chores)
+        print(self.weekly_chores)
+        print(self.monthly_chores)
         match args[1]:
             case "Daily":
                 if args[1] == "Select":
@@ -257,7 +259,7 @@ class TKChores:
         match args[1]:
             case "Daily":
                 title = self.daily_chores[args[0]][0]["text"]
-                chore_id = ChoreController.find_by_element("name", title)[0].doc_id
+                chore_id = ChoreController.find_by_element("name", title)[0].id
                 ChoreController.remove_doc(chore_id)
                 for widget in self.daily_chores[args[0]][:-1]:
                     widget.destroy()
