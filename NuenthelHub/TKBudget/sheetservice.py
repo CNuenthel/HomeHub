@@ -2,13 +2,12 @@
 Provides CRUD operations for authenticated gspread clients
 
 """
-import asyncio
-
 import gspread_asyncio
 import pathlib
 import typing
 from google.oauth2 import service_account as sa
 from NuenthelHub.secret import secret_path
+
 
 """ Typing Variables """
 Pathlike = typing.Union[str, pathlib.Path]
@@ -36,8 +35,10 @@ SheetManager = gspread_asyncio.AsyncioGspreadClientManager(get_creds)
 class SheetService:
     """ Interacts with Google sheets using sheets data located in an authenticated clients drive """
     def __init__(self, workbook_name, sheet_index):
+        self.manager = SheetManager
         self.workbook_name = workbook_name
         self.sheet_index = sheet_index
+        self.worksheet = None
         """
         Initializes class with authenticated client
 
@@ -54,25 +55,23 @@ class SheetService:
 
     async def get_cell_value(self, alphanumeric_coord: str):
         """ Returns cell value at given alphanumeric coordinate, i.e. 'B1' """
-        sheet = await self.open_worksheet()
-        cell_data = await sheet.acell(alphanumeric_coord)
+        worksheet = await self.open_worksheet()
+        cell_data = await worksheet.acell(alphanumeric_coord)
         return cell_data.value
 
     async def get_column_values(self, column_number: int) -> list:
         """ Returns all values of a desired column indexed from left to right """
-        sheet = await self.open_worksheet()
-        return await sheet.col_values(column_number)
+        worksheet = await self.open_worksheet()
+        return await worksheet.col_values(column_number)
 
     async def update_cell(self, alphanumeric_coord: str, data: str or int):
         """ Updates a cell by alphanumeric index"""
-        sheet = await self.open_worksheet()
-        return await sheet.update(alphanumeric_coord, data)
+        worksheet = await self.open_worksheet()
+        return await worksheet.update(alphanumeric_coord, data)
 
     async def update_cell_by_coord(self, row_coord: int, col_coord: int, data: str or int):
         """ Updates a cell by sheet binary coordinates"""
-        sheet = await self.open_worksheet()
-        return await sheet.update_cell(row_coord, col_coord, data)
-
-
+        worksheet = await self.open_worksheet()
+        return await worksheet.update_cell(row_coord, col_coord, data)
 
 

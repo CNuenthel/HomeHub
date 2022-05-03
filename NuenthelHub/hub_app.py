@@ -185,7 +185,7 @@ class RootGUI(Tk):
             self.budget.repack_module()
             return
 
-        self.budget = tkb.TKBudget(master=self, style=self.style, sheets_connect=self.sheets_connect,
+        self.budget = tkb.TKBudget(master=self, style=self.style,
                                    callback=self._repack_main)
 
     def show_chores(self):
