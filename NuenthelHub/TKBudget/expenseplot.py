@@ -2,8 +2,8 @@ import matplotlib.pyplot as plt
 
 
 class ExpensePlot:
-    def __init__(self, sheets_connect):
-        self.expense_data = sheets_connect.get_expense_data()
+    def __init__(self, expense_data):
+        self.expense_data = expense_data
         self.x_axis = [key[:3] for key in self.expense_data]
         self.y_axis = [int(self.expense_data[key][0]["perc"]) for key in self.expense_data]
         self.x_coords = [i for i, _ in enumerate(self.x_axis)]
@@ -33,6 +33,4 @@ class ExpensePlot:
 
     def get_plot(self):
         return self.figure
-
-
 

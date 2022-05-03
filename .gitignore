@@ -3,4 +3,5 @@ chromedriver.exe
 .venv/
 config.json
 image_path.py
-.__pycache__/
+__pycache__/
+service_account.json

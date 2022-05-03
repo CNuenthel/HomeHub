@@ -1,45 +1,41 @@
 from functools import partial
-from tkinter import Frame, Tk, NSEW, CENTER, FLAT, Label, GROOVE, W, EW, BOTH, END, Button
+from tkinter import Frame, Tk, NSEW, CENTER, FLAT, Label, GROOVE, W, EW, BOTH, END, Button, StringVar
 from tkinter import ttk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-
 from TKBudget.expenseplot import ExpensePlot
 from supportmodules.modifiedwidgets import HoverLabel, SnapbackEntry
-
-
-def row_col_configure(master: Tk or Frame, weight: int, col_index: int = 0, row_index: int = 0, row_config: bool = True,
-                      col_config: bool = True):
-    columns, rows = master.grid_size()
-    if col_config:
-        for i in range(col_index, columns):
-            master.columnconfigure(i, weight=weight)
-    if row_config:
-        for i in range(row_index, rows):
-            master.rowconfigure(i, weight=weight)
+from NuenthelHub.TKBudget import nuenthelsheetdata as nsd
+import threading
+import queue
 
 
 class TKBudget:
-    """ Creates a top level GUI for budget handling """
+    """ Creates a top level GUI for budget handling
 
-    def __init__(self, master, sheets_connect, style, callback: callable = None):
+    This class is aware that param master has the attribute body_frame
+
+    """
+
+    def __init__(self, master, style, callback: callable = None):
         super().__init__()
         """ Window Attributes """
         self.master = master
         self.callback = callback
+        self.graph_frame = None
 
         """ External Helper Classes """
-        self.nfsheet = sheets_connect
+        self.nfsheet = nsd.NuenthelSheetsData()
+
+        """ The Queue """
+        self.queue = queue.Queue()
 
         """ Widgets """
-        self.expense_entries = []
-        self.expense_labels = []
-        self.expense_hbuttons = []
+        self.expenses = {}
+        self.incomes = {}
         self.recents = []
-        self.income_entries = []
-        self.income_buttons = []
+
         self.budget_entry = None
         self.used_entry = None
-        self.graph = None
 
         """ Styling """
         self.style = style
@@ -50,93 +46,248 @@ class TKBudget:
         self.style.configure("Cumulate.TButton", font="Roboto 12")
 
         """ GUI Constructor Functions """
-        self._make_main_frame()
-        self._make_sidebar_frame()
-        self._make_sidebar_buttons()
-        self._make_expenses()
-        self._make_graph()
-        self._make_recent()
-        self._make_income()
+        self._make_frames()
+        self._grid_frames()
+        self._make_sidebar_widgets()
+        self._make_expense_widgets()
+        self._make_recent_widgets()
+        self._make_income_widgets()
 
-        """ GUI Configuration Functions """
-        self._configure_expense_colors()
-        self._update_expense_entries()
-        self._configure_incomes()
+        """ Initialize Widgets """
+        self._initialization_threads()
+        # self._initialize_expense_colors()
+        # self._initialize_expense_entries()
+        # self._initialize_incomes()
+
+        """ Configure Frames """
         self._configure_rows_cols(self.main_frame)
-        self._configure_rows_cols(self.graph_frame)
         self._configure_rows_cols(self.expense_frame)
         self._configure_rows_cols(self.recent_frame)
         self._configure_rows_cols(self.income_frame)
         self._configure_rows_cols(self.sidebar_frame)
 
     def repack_module(self):
+        """ Repacks the main frame and sidebar frame of the Budget page, called to return
+        the Budget page after widgets were removed with grid_forget """
         self.main_frame.grid(row=0, column=0, padx=10, pady=10, sticky=NSEW, columnspan=4, rowspan=2)
         self.sidebar_frame.grid(row=0, column=5, padx=10, pady=10, ipadx=30, sticky=NSEW)
 
-    def _make_main_frame(self):
+    def _make_frames(self):
+        """ Creates all required frame widgets on master window """
         self.main_frame = Frame(self.master.body_frame)
-        self.main_frame.grid(row=0, column=0, padx=10, pady=10, sticky=NSEW, columnspan=4, rowspan=2)
-
-    def _make_sidebar_frame(self):
         self.sidebar_frame = Frame(self.master.body_frame)
-        self.sidebar_frame.grid(row=0, column=5, padx=10, pady=10, ipadx=30, sticky=NSEW)
+        self.expense_frame = Frame(self.main_frame, background="white", borderwidth=3, relief=GROOVE)
+        self.recent_frame = Frame(self.main_frame, background="white", borderwidth=3, relief=GROOVE)
+        self.income_frame = Frame(self.main_frame, background="white", borderwidth=3, relief=GROOVE)
+        self.graph_frame = Frame(self.main_frame, background="white", borderwidth=3, relief=GROOVE)
 
-    def _make_sidebar_buttons(self):
+    def _grid_frames(self):
+        """ Assigns all required frame widgets on master using grid manager """
+        self.main_frame.grid(row=0, column=0, padx=10, pady=10, sticky=NSEW, columnspan=4, rowspan=2)
+        self.sidebar_frame.grid(row=0, column=5, padx=10, pady=10, ipadx=30, sticky=NSEW)
+        self.expense_frame.grid(row=0, column=0, columnspan=3, sticky=NSEW, padx=10, pady=10)
+        self.recent_frame.grid(row=1, column=1, padx=5, pady=5, sticky=NSEW)
+        self.income_frame.grid(row=1, column=2, padx=5, pady=5, sticky=NSEW)
+        self.graph_frame.grid(row=1, column=0, sticky=NSEW, padx=5, pady=5)
+
+    def _make_sidebar_widgets(self):
+        """ Constructs sidebar widgets and packs onto sidebar frame """
         return_btn = ttk.Button(self.sidebar_frame, text="Return", command=self.return_to_main)
         return_btn.pack(expand=True, fill=BOTH)
 
-    def _make_expenses(self):
-        self.expense_frame = Frame(self.main_frame, background="white", borderwidth=3, relief=GROOVE)
-        self.expense_frame.grid(row=0, column=0, columnspan=3, sticky=NSEW, padx=10, pady=10)
+    def _make_expense_widgets(self):
+        """ Creates a Button and Entry for each expense and grids onto expense frame """
+        labels = ["Dining", "Grocery", "Transport", "Recreation", "Personal", "JL", "Other"]
 
-        labels = ["Dining", "Grocery", "Transport", "Recreation", "Personal", "J&L", "Other"]
-        commands = [partial(self.cumulate_expense, i) for i in range(7)]
+        for i in range(len(labels)):
+            var = StringVar()
+            btn = ttk.Button(self.expense_frame, text=labels[i], command="",
+                             style="Cumulate.TButton")
+            entry = SnapbackEntry(self.expense_frame, textvariable=var, font="Roboto 12", justify=CENTER)
 
-        for i, j in enumerate(labels):
-            btn = ttk.Button(self.expense_frame, text=j, command=commands[i], style="Cumulate.TButton")
-            btn.grid(row=0, column=i+1, padx=5, pady=5, sticky=NSEW)
-            self.expense_labels.append(btn)
+            btn.grid(row=0, column=i, padx=5, pady=5, sticky=NSEW)
+            entry.grid(row=1, column=i, padx=5, pady=5, sticky=NSEW)
+            self.expenses[labels[i]] = {"btn": btn, "var": var, "ent": entry}
 
-            entry = SnapbackEntry(self.expense_frame, font="Roboto " + "12", justify=CENTER)
-            entry.grid(row=1, column=i+1, padx=5, pady=5, sticky=NSEW)
-            self.expense_entries.append(entry)
-
-    def _make_recent(self):
-        self.recent_frame = Frame(self.main_frame, background="white", borderwidth=3, relief=GROOVE)
-        self.recent_frame.grid(row=1, column=1, padx=5, pady=5, sticky=NSEW)
-
+    def _make_recent_widgets(self):
+        """ Creates text-less Labels and grids onto recent frame """
         Label(self.recent_frame, text="Recent", font="Roboto " + "12 bold", background="white").pack()
 
         for i in range(11):
-            self.x = HoverLabel(self.recent_frame, text="", font="Roboto " + "12", background="white")
+            self.x = Label(self.recent_frame, text="", font="Roboto " + "12", background="white")
             self.x.pack()
             self.recents.append(self.x)
 
-    def _make_income(self):
-        self.income_frame = Frame(self.main_frame, background="white", borderwidth=3, relief=GROOVE)
-        self.income_frame.grid(row=1, column=2, padx=5, pady=5, sticky=NSEW)
-
+    def _make_income_widgets(self):
+        """ Creates a Button and Entry for each income and grids onto income frame """
         labels = ["Cody", "Sam", "Other"]
-        commands = [partial(self.cumulate_income, i) for i in range(3)]
-        for i, j in enumerate(labels):
-            ttk.Button(self.income_frame, text=j, command=commands[i], style="Cumulate.TButton").grid(row=i, column=0, pady=5, padx=5, sticky=NSEW)
-            se = SnapbackEntry(self.income_frame, font="Roboto " + "15 italic", justify=CENTER)
+
+        for i in range(len(labels)):
+            var = StringVar()
+            btn = ttk.Button(self.income_frame, command="",
+                             text=labels[i], style="Cumulate.TButton")
+            se = SnapbackEntry(self.income_frame, textvariable=var,
+                               font="Roboto " + "15 italic", justify=CENTER)
+
             se.grid(row=i, column=1, pady=5, padx=5, sticky=NSEW)
-            self.income_entries.append(se)
+            btn.grid(row=i, column=0, pady=5, padx=5, sticky=NSEW)
 
-    def _make_graph(self):
-        if self.graph:
-            self.graph_frame.destroy()
+            self.incomes[labels[i]] = {"btn": btn, "ent": se, "var": var}
 
-        self.graph = True
-        self.graph_frame = Frame(self.main_frame, background="white", borderwidth=3, relief=GROOVE)
-        self.graph_frame.grid(row=1, column=0, sticky=NSEW, padx=5, pady=5)
+    def _initialize_expense_colors(self, expense_data: list):
+        """ Initializes expense Labels with color grade """
+        print(expense_data)
+        for expense in expense_data:
+            self.color_expense_label(expense[0], expense[1])
+            print("Color changed")
 
-        figure = ExpensePlot(self.nfsheet).get_plot()
-        bar_graph = FigureCanvasTkAgg(figure, self.graph_frame)
-        bar_graph.get_tk_widget().pack(padx=10, pady=10, expand=True, fill=BOTH)
+    def _initialize_expense_entries(self, expense_data: list):
+        """ Initializes expense Entries with current expense data """
+        for expense in expense_data:
+            self.expenses[expense[0]]["ent"].insert(0, expense[1])
 
-    # """_______________These configurations are specific to my family budget sheet__________________________________"""
+    def _initialize_incomes(self):
+        """ Initializes income Entries with current income data """
+        for category in self.nfsheet.incomes:
+            value = self.nfsheet.get_income_total(category)
+            self.incomes[category]["ent"].insert(0, value)
+
+    def _initialization_threads(self):
+        """ Queue data for expense color initialization """
+        threading.Thread(target=self.thread_expense_percent, args=(self.nfsheet.expenses, "init_expense_perc")).start()
+        threading.Thread(target=self.thread_expense_value, args=(self.nfsheet.expenses, "init_expense_value"))
+
+    def thread_expense_percent(self, categories, queue_id):
+        """ Thread process I/O request to NuenthelSheets expense percentage and place in queue
+        list structure = [queue_id: str, [expense_category, percentage]]"""
+        expense_data = []
+        for category in categories:
+            percentage = self.nfsheet.get_expense_percent(category)
+            expense_data.append([category, percentage])
+        self.queue.put([queue_id, expense_data])
+        self.master.after(100, self._process_queue())
+        return
+
+    def thread_expense_value(self, categories, queue_id):
+        """ Thread process I/O request to NuenthelSheets expense total and place in queue
+        list structure = [queue_id: str, [expense_category, expense total]]"""
+        expense_data = []
+        for category in categories:
+            value = self.nfsheet.get_expense_total(category)
+            expense_data.append([category, value])
+        self.queue.put([queue_id, expense_data])
+        self.master.after(100, self._process_queue())
+        return
+
+    def _process_queue(self):
+        """ Processes queue data and calls linked functions """
+        try:
+            output = self.queue.get_nowait()
+            match output[0]:
+                case "init_expense_perc":
+                    print(f"processing init expense command")
+                    self._initialize_expense_colors(output[1])  # Sends data list
+                case "init_expense_value":
+                    print(f"processing init expense value command")
+                    self._initialize_expense_entries(output[1])
+
+        except queue.Empty:
+            print("Queue empty, rerunning")
+            self.master.after(100, self._process_queue)
+
+    def color_expense_label(self, category, percentage: int):
+        if percentage is None or percentage < 50:
+            self.expenses[category]["btn"].configure(style="GrnCumulate.TButton")
+        elif 50 <= percentage < 75:
+            self.expenses[category]["btn"].configure(style="YelCumulate.TButton")
+        elif 75 <= percentage < 90:
+            self.expenses[category]["btn"].configure(style="OrgCumulate.TButton")
+        elif percentage >= 90:
+            self.expenses[category]["btn"].configure(style="RedCumulate.TButton")
+
+    def add_recent(self, expense_class, value):
+        """ Adds a value change to the Recent frame """
+        for i in range(len(self.recents) - 1, -1, -1):
+            self.recents[i]["text"] = self.recents[i - 1]["text"]
+
+        self.recents[0]["text"] = f"[{expense_class}] ${value}"
+
+
+
+    # def thread_graph(self):
+    #     """ WIP """
+    #     expense_data = asyncio.run(self.nfsheet.get_expense_data())
+    #     figure = ExpensePlot(expense_data).get_plot()
+    #     bar_graph = FigureCanvasTkAgg(figure, self.graph_frame)
+    #     bar_graph.get_tk_widget().pack(padx=10, pady=10, expand=True, fill=BOTH)
+    #
+    # def _make_graph(self):
+    #     """ WIP """
+    #     if self.graph_frame:
+    #         self.graph_frame.destroy()
+    #     self.master.after(100, self.thread_graph)
+    #
+    # def process_queue(self):
+    #     try:
+    #         msg = self.queue.get_nowait()
+    #     except queue.Empty:
+    #         self.master.after(100, self.process_queue)
+    #
+    # def start_expense_color_thread(self, category):
+    #     """
+    #     Configures button color changes based on expense percentages
+    #     Assumes order of expenses are:
+    #     [Dining, Grocery, Transport, Recreation, Personal, JL, Other]
+    #     """
+    #     threading.Thread(target=)
+    #     self.master.after(100, self.process_queue)
+
+    # def queue_command(self, func: callable, *args):
+    #     pass
+    #
+
+
+    """ BUTTON FUNCTIONS ---------------------------------------------------------------------------------"""
+
+    # def cumulate_expense_thread(self, column, value):
+    #     self.nfsheet.add_expense(column + 1, value)
+    #
+    # def start_cumulate_income_thread(self, column):
+    #     if self.expense_entries[column].current_text is not None:
+    #         value = self.expense_entries[column].get()
+    #         threading.Thread(target=self.cumulate_expense_thread(column, value), daemon=True).start()
+    #         self.master.after(1000, self._update_expense_entries)  # Recalculate and show expense entries
+    #         self.expense_entries[column].current_text = None  # Reset entry attribute current text to none
+    #         self._configure_recents(self.expense_labels[column].cget("text"), value)  # add expense to recent expenses
+    #         # self._make_graph()
+    #
+    # def cumulate_income(self, column):
+    #     """ Cumulate income for Cody,Sam,Other entries """
+    #     if self.income_entries[column].current_text is not None:
+    #         value = float(self.income_entries[column].get())
+    #         str_repr = "Err"  # placeholder to show err if unmatched col
+    #
+    #         match column:
+    #             case 0:
+    #                 self.nfsheet.cumulate_dollar_format_cell(value, "C56")
+    #                 str_repr = "CInc"
+    #             case 1:
+    #                 self.nfsheet.cumulate_dollar_format_cell(value, "C57")
+    #                 str_repr = "SInc"
+    #             case 2:
+    #                 self.nfsheet.cumulate_dollar_format_cell(value, "C58")
+    #                 str_repr = "OInc"
+    #
+    #         self._configure_recents(str_repr, value)
+    #         self._configure_incomes()
+    #         # self._make_graph()
+    #
+    def return_to_main(self):
+        self.main_frame.grid_remove()
+        self.sidebar_frame.grid_remove()
+        self.callback()
+
+    """ STATIC METHODS ---------------------------------------------------------------------------------------"""
 
     @staticmethod
     def _configure_rows_cols(master):
@@ -146,90 +297,3 @@ class TKBudget:
         for i in range(master.grid_size()[0]):
             master.columnconfigure(i, weight=1)
 
-    def _configure_expense_colors(self):
-        """
-        Configures button color changes based on expense percentages
-        Assumes order of expenses are:
-        [Dining, Grocery, Transport, Recreation, Personal, J&L, Other]
-        """
-        expense_data = self.nfsheet.get_expense_data()
-        perc_list = [expense_data[key][0]["perc"] for key in expense_data.keys()]
-
-        for i, j in enumerate(self.expense_labels):
-            if perc_list[i] < 50:
-                j.configure(style="GrnCumulate.TButton")
-            elif 50 <= perc_list[i] < 75:
-                j.configure(style="YelCumulate.TButton")
-            elif 75 <= perc_list[i] < 90:
-                j.configure(style="OrgCumulate.TButton")
-            elif perc_list[i] >= 90:
-                j.configure(style="RedCumulate.TButton")
-
-    def _update_expense_entries(self):
-        """
-        Configures entry values based on expense values
-        Assumes order of expenses are:
-        [Dining, Grocery, Transport, Recreation, Personal, J&L, Other]
-        """
-        expense_data = self.nfsheet.get_expense_data()
-        value_list = [expense_data[key][1]["val"] for key in expense_data.keys()]
-
-        for i, j in enumerate(self.expense_entries):
-            j.delete(0, END)
-            j.insert(0, value_list[i])
-        self._make_graph()
-
-    def _configure_recents(self, expense_class, value):
-        for i in range(len(self.recents) - 1, -1, -1):
-            self.recents[i]["text"] = self.recents[i - 1]["text"]
-
-        self.recents[0]["text"] = f"[{expense_class}] ${value}"
-
-    def _configure_incomes(self):
-        """ Fill income entries with corresponding budget cells """
-        income_cell_values = [  # Cody's, Sam's, Other's
-            self.nfsheet.get_cell_dollar_data("C56"),
-            self.nfsheet.get_cell_dollar_data("C57"),
-            self.nfsheet.get_cell_dollar_data("C58")]
-
-        for i, j in enumerate(self.income_entries):
-            j.delete(0, END)
-            j.insert(0, income_cell_values[i])
-
-    # ___________________Button Functions_______________________________________________________________________________
-
-    def cumulate_expense(self, column):
-        """ JFC This has so much crossover it hurts """
-        if self.expense_entries[column].current_text is not None:
-            value = self.expense_entries[column].get()  # Get value user put in entry
-            self.nfsheet.add_expense(column + 1, value)  # Add expense to budget sheet
-            self._update_expense_entries()  # Recalculate and show expense entries
-            self.expense_entries[column].current_text = None  # Reset entry attribute current text to none
-            self._configure_recents(self.expense_labels[column].cget("text"), value)  # add expense to recent expenses
-            self._make_graph()
-
-    def cumulate_income(self, column):
-        """ Cumulate income for Cody,Sam,Other entries """
-        if self.income_entries[column].current_text is not None:
-            value = float(self.income_entries[column].get())
-            str_repr = "Err"  # placeholder to show err if unmatched col
-
-            match column:
-                case 0:
-                    self.nfsheet.update_dollar_format_cell(value, "C56")
-                    str_repr = "CInc"
-                case 1:
-                    self.nfsheet.update_dollar_format_cell(value, "C57")
-                    str_repr = "SInc"
-                case 2:
-                    self.nfsheet.update_dollar_format_cell(value, "C58")
-                    str_repr = "OInc"
-
-            self._configure_recents(str_repr, value)
-            self._configure_incomes()
-            self._make_graph()
-
-    def return_to_main(self):
-        self.main_frame.grid_remove()
-        self.sidebar_frame.grid_remove()
-        self.callback()
