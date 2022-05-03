@@ -39,11 +39,11 @@ class TKBudget:
 
         """ Styling """
         self.style = style
-        self.style.configure("GrnCumulate.TButton", font="Roboto 12", background="#ccfdcc")
-        self.style.configure("YelCumulate.TButton", font="Roboto 12", background="#f9fdcc")
-        self.style.configure("OrgCumulate.TButton", font="Roboto 12", background="#fdf1cc")
-        self.style.configure("RedCumulate.TButton", font="Roboto 12", background="#fdd0cc")
-        self.style.configure("Cumulate.TButton", font="Roboto 12")
+        self.style.configure("GrnCumulate.TButton", font="Roboto 12", background="#ccfdcc", borderwidth=10)
+        self.style.configure("YelCumulate.TButton", font="Roboto 12", background="#f9fdcc", borderwidth=10)
+        self.style.configure("OrgCumulate.TButton", font="Roboto 12", background="#fdf1cc", borderwidth=10)
+        self.style.configure("RedCumulate.TButton", font="Roboto 12", background="#fdd0cc", borderwidth=10)
+        self.style.configure("Cumulate.TButton", font="Roboto 12", borderwidth=3)
 
         """ GUI Constructor Functions """
         self._make_frames()
@@ -55,9 +55,6 @@ class TKBudget:
 
         """ Initialize Widgets """
         self._initialization_threads()
-        # self._initialize_expense_colors()
-        # self._initialize_expense_entries()
-        # self._initialize_incomes()
 
         """ Configure Frames """
         self._configure_rows_cols(self.main_frame)
@@ -146,36 +143,56 @@ class TKBudget:
         for expense in expense_data:
             self.expenses[expense[0]]["ent"].insert(0, expense[1])
 
-    def _initialize_incomes(self):
+    def _initialize_incomes(self, income_data: list):
         """ Initializes income Entries with current income data """
-        for category in self.nfsheet.incomes:
-            value = self.nfsheet.get_income_total(category)
-            self.incomes[category]["ent"].insert(0, value)
+        for income in income_data:
+            self.incomes[income[0]]["ent"].insert(0, income[1])
 
     def _initialization_threads(self):
         """ Queue data for expense color initialization """
         threading.Thread(target=self.thread_expense_percent, args=(self.nfsheet.expenses, "init_expense_perc")).start()
-        threading.Thread(target=self.thread_expense_value, args=(self.nfsheet.expenses, "init_expense_value"))
+        threading.Thread(target=self.thread_expense_value, args=(self.nfsheet.expenses, "init_expense_value")).start()
+        threading.Thread(target=self.thread_income_value, args=(self.nfsheet.incomes, "init_income_value")).start()
+        threading.Thread(target=self.create_plot, args=("init_plot",)).start()
+
+    def create_plot(self, queue_id):
+        expense_values = [self.nfsheet.get_expense_total(category) for category in self.nfsheet.expenses]
+        expense_percents = [self.nfsheet.get_expense_percent(category) for category in self.nfsheet.expenses]
+        figure = ExpensePlot(expense_values, expense_percents, self.nfsheet.expenses).get_plot()
+        self.queue.put([queue_id, figure])
+        self.master.after(100, self._process_queue())
+        return
 
     def thread_expense_percent(self, categories, queue_id):
         """ Thread process I/O request to NuenthelSheets expense percentage and place in queue
-        list structure = [queue_id: str, [expense_category, percentage]]"""
-        expense_data = []
+        list structure = [queue_id: str, [expense_category: str, percentage: int]]"""
+        expense_percent_data = []
         for category in categories:
             percentage = self.nfsheet.get_expense_percent(category)
-            expense_data.append([category, percentage])
-        self.queue.put([queue_id, expense_data])
+            expense_percent_data.append([category, percentage])
+        self.queue.put([queue_id, expense_percent_data])
         self.master.after(100, self._process_queue())
         return
 
     def thread_expense_value(self, categories, queue_id):
         """ Thread process I/O request to NuenthelSheets expense total and place in queue
-        list structure = [queue_id: str, [expense_category, expense total]]"""
-        expense_data = []
+        list structure = [queue_id: str, [expense_category: str, expense total: str]]"""
+        expense_value_data = []
         for category in categories:
             value = self.nfsheet.get_expense_total(category)
-            expense_data.append([category, value])
-        self.queue.put([queue_id, expense_data])
+            expense_value_data.append([category, value])
+        self.queue.put([queue_id, expense_value_data])
+        self.master.after(100, self._process_queue())
+        return
+
+    def thread_income_value(self, categories, queue_id):
+        """ Thread process I/O request to NuenthelSheets expense total and place in queue
+        list structure = [queue_id: str, [income_category: str, expense total: str]]"""
+        income_value_data = []
+        for category in categories:
+            value = self.nfsheet.get_income_total(category)
+            income_value_data.append([category, value])
+        self.queue.put([queue_id, income_value_data])
         self.master.after(100, self._process_queue())
         return
 
@@ -185,11 +202,13 @@ class TKBudget:
             output = self.queue.get_nowait()
             match output[0]:
                 case "init_expense_perc":
-                    print(f"processing init expense command")
                     self._initialize_expense_colors(output[1])  # Sends data list
                 case "init_expense_value":
-                    print(f"processing init expense value command")
                     self._initialize_expense_entries(output[1])
+                case "init_income_value":
+                    self._initialize_incomes(output[1])
+                case "init_plot":
+                    self.grid_plot(output[1])
 
         except queue.Empty:
             print("Queue empty, rerunning")
@@ -212,15 +231,10 @@ class TKBudget:
 
         self.recents[0]["text"] = f"[{expense_class}] ${value}"
 
+    def grid_plot(self, figure):
+        bar_graph = FigureCanvasTkAgg(figure, self.graph_frame)
+        bar_graph.get_tk_widget().pack(padx=10, pady=10, expand=True, fill=BOTH)
 
-
-    # def thread_graph(self):
-    #     """ WIP """
-    #     expense_data = asyncio.run(self.nfsheet.get_expense_data())
-    #     figure = ExpensePlot(expense_data).get_plot()
-    #     bar_graph = FigureCanvasTkAgg(figure, self.graph_frame)
-    #     bar_graph.get_tk_widget().pack(padx=10, pady=10, expand=True, fill=BOTH)
-    #
     # def _make_graph(self):
     #     """ WIP """
     #     if self.graph_frame:

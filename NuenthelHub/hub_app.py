@@ -41,7 +41,6 @@ class RootGUI(Tk):
         """ GUI Connections """
         self.tv_connected = "Disconnected"
         self.budget_connected = "Disconnected"
-        self._connect_to_sheets()
 
         """ Styles """
         self.style = Style(self)
@@ -100,10 +99,6 @@ class RootGUI(Tk):
 
     def _repack_main(self):
         self.main_button_frame.grid(row=0, column=0, sticky=NSEW)
-
-    def _connect_to_sheets(self):
-        self.sheets_connect = NuenthelSheetsData()
-        self.budget_connected = "Connected"
 
     def _create_main_button_frame(self):
         self.main_button_frame = Frame(self.body_frame)

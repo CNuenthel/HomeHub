@@ -4,4 +4,4 @@ chromedriver.exe
 config.json
 image_path.py
 __pycache__/
-service_account.json
+secret/

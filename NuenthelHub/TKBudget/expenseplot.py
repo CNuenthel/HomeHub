@@ -2,11 +2,10 @@ import matplotlib.pyplot as plt
 
 
 class ExpensePlot:
-    def __init__(self, expense_data):
-        self.expense_data = expense_data
-        self.x_axis = [key[:3] for key in self.expense_data]
-        self.y_axis = [int(self.expense_data[key][0]["perc"]) for key in self.expense_data]
-        self.x_coords = [i for i, _ in enumerate(self.x_axis)]
+    def __init__(self, expenses, percents, x_labels):
+        self.x_axis = [label[:3] for label in x_labels]
+        self.y_axis = percents
+        self.x_coords = expenses
         self.color_list = []
         self.figure = None
 
