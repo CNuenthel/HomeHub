@@ -21,16 +21,19 @@ class NuenthelSheetsData:
     """
 
     def __init__(self):
-        """
-         Initializes with first sheet of the N-Fam 2022 budget workbook
-
-         :param workbook Name of workbook as found in Google Drive
-         """
+        """ Initializes with first sheet of the N-Fam 2022 budget workbook """
         self.ss = SheetService("N-Fam 2022", 0)
         self.expenses = ["Dining", "Grocery", "Transport", "Recreation", "Personal", "JL", "Other"]
+        self.expense_cols = {category: i for i, category in enumerate(self.expenses)}
+        self.expense_alphanums = {category: "C"+str(i+78) for i, category in enumerate(self.expenses)}
         self.incomes = ["Cody", "Sam", "Other"]
+        print(self.expense_alphanums)
 
     def get_expense_percent(self, category: str) -> int:
+        """ Return percent cell value of a given expense category
+
+        :param category Category of expense
+        """
         if category not in self.expenses:
             raise ValueError(f"Invalid category passed to function: {category} not found. Valid arguments: "
                              "Dining, Grocery, Transport, Recreation, Personal, JL, Other")
@@ -51,6 +54,10 @@ class NuenthelSheetsData:
                 return int(self.get_cell_value("B84")[:-1])
 
     def get_expense_total(self, category: str) -> int:
+        """ Return cell value of a given expense category
+
+        :param category Category of expense
+        """
         if category not in self.expenses:
             raise ValueError(f"Invalid category passed to function: {category} not found. Valid arguments: "
                              "Dining, Grocery, Transport, Recreation, Personal, JL, Other")
@@ -71,6 +78,10 @@ class NuenthelSheetsData:
                 return self.get_cell_value("C84")
 
     def get_income_total(self, category: str) -> int:
+        """ Returns income cell value for Cody, Sam or Other
+
+        :param category Category of income, Cody, Sam or Other
+        """
         if category not in self.incomes:
             raise ValueError(f"Invalid category passed to function: {category} not found. Valid arguments: "
                              f"Cody, Sam, Other")
@@ -92,7 +103,8 @@ class NuenthelSheetsData:
 
     def get_cell_dollar_data(self, alphanum_cell_coord: str) -> str:
         """ Gets cell data from a dollar formatted cell, returns $0.00 if empty cell
-        :param cell Dollar formatted cell alphanumeric coordinate
+
+        :param alphanum_cell_coord Dollar formatted cell alphanumeric coordinate
         """
         cell_value = self.ss.get_cell_value(alphanum_cell_coord)
         if not cell_value:
@@ -113,16 +125,17 @@ class NuenthelSheetsData:
         additional_value += self.reformat_dollar_string(current_value)
         return self.ss.update_cell(alphanum_cell_coord, additional_value)
 
-    def add_expense(self, expense_column: int, expense: float) -> dict:
+    # TODO This is currently throwing an exception for incorrect cell label for self.worksheet.col_values(
+    def add_expense(self, category: str, expense: float) -> dict:
         """
         Adds expense to desired expense column on sheet
 
-        :param expense_column Index of column for expense to be added
+        :param category Name of expense column
         :param expense Value of expense to be inserted
         """
-        column_values = self.ss.get_column_values(expense_column)
+        column_values = self.ss.get_column_values(self.expense_cols[category])
         row = 1 + len(column_values)
-        return self.ss.update_cell_by_coord(row, expense_column, expense)
+        return self.ss.update_cell_by_coord(row, self.expense_cols[category], expense)
 
     @staticmethod
     def reformat_dollar_string(dollar_string: str) -> float:

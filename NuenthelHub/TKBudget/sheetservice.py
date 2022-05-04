@@ -5,15 +5,27 @@ ASYNC-GSPREAD class [AsyncSheetService] keyed out for retention, currently keepi
 the synchronous [SheetService] class as the primary Google Sheets API front end for use
 with higher level threading calls from TKBudget.
 
+This authentication is required to use gspread library, which authenticates the app
+and allows access to your Google Drive and Sheets through a service account O.auth2.
+Details can be found here:
+
+https://docs.gspread.org/en/latest/oauth2.html#enable-api-access
+
+SheetService wraps the gspread library and includes a repeated Thread to constantly
+update the sheet, so data can be queued without the requirement of an API call.
+
+The thread will pull worksheet data from Google Sheets every 30 seconds (Google limits Sheets
+API requests to 1 per second (according to asyncio-gspread). SheetService and gspread do not
+limit API requests so this limit can be broke.
 """
-import gspread_asyncio
+
+# import gspread_asyncio
 import gspread
 import pathlib
 import typing
-from google.oauth2 import service_account as sa  # Commented out for, used with asyncio-gspread
+# from google.oauth2 import service_account as sa  # Commented out for, used with asyncio-gspread
 from NuenthelHub.secret import secret_path
 import threading
-import inspect
 
 """ Typing Variables """
 Pathlike = typing.Union[str, pathlib.Path]
@@ -40,8 +52,12 @@ SyncSheetManager = gspread.service_account(path_to_sa_key, scopes)
 
 
 class SheetService:
-    """ Interacts with Google sheets using sheets data located in an authenticated clients drive """
-    def __init__(self, workbook_name, sheet_index):
+    """ Interacts with Google sheets using sheets data located in an authenticated clients drive
+
+    @param: workbook_name {str} Name of sheet from Google sheets
+    @param: sheet_index {int} Number of tab from within sheet (0+ from left to right)
+    """
+    def __init__(self, workbook_name: str, sheet_index: int):
         self.manager = SyncSheetManager
         self.workbook_name = workbook_name
         self.sheet_index = sheet_index
@@ -50,28 +66,41 @@ class SheetService:
 
     def _start_worksheet_thread(self):
         """ Runs a parallel thread that will update the worksheet every 30 seconds """
-        print("Starting SyncSheetService Thread Update Loop")
         RepeatTimer(30, self._get_worksheet).start()
 
     def _get_worksheet(self):
         """ Pulls a spreadsheet page from a workbook """
-        print("Updating Worksheet")
         self.worksheet = self.manager.open(self.workbook_name).get_worksheet(self.sheet_index)
 
     def get_cell_value(self, alphanumeric_coord: str):
-        """ Returns cell value at given alphanumeric coordinate, i.e. 'B1' """
+        """ Returns cell value at given alphanumeric coordinate, i.e. 'B1'
+
+        @param alphanumeric_coord {str} Sheet numeric/alphabetic coordinate of a cell
+        """
         return self.worksheet.acell(alphanumeric_coord).value
 
     def get_column_values(self, column_number: int) -> list:
-        """ Returns all values of a desired column indexed from left to right """
+        """ Returns all values of a desired column indexed from left to right
+
+        @param column_number {int} Sheet column numeric ID
+        """
         return self.worksheet.col_values(column_number)
 
     def update_cell(self, alphanumeric_coord: str, data: str or int):
-        """ Updates a cell by alphanumeric index"""
+        """ Updates a cell by alphanumeric index
+
+        @param alphanumeric_coord {str} Sheet numeric/alphabetic coordinate of a cell
+        @param data {str/int} Data to be posted to cell
+        """
         return self.worksheet.update(alphanumeric_coord, data)
 
     def update_cell_by_coord(self, row_coord: int, col_coord: int, data: str or int):
-        """ Updates a cell by sheet binary coordinates"""
+        """ Updates a cell by sheet binary coordinates
+
+        @param row_coord {int} Sheet row numeric coordinate
+        @param col_coord {int} Sheet column numeric coordinate
+        @param data {str/int} Data to be posted to cell
+        """
         return self.worksheet.update_cell(row_coord, col_coord, data)
 
 

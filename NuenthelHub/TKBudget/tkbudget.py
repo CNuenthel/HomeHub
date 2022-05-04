@@ -97,14 +97,13 @@ class TKBudget:
         labels = ["Dining", "Grocery", "Transport", "Recreation", "Personal", "JL", "Other"]
 
         for i in range(len(labels)):
-            var = StringVar()
-            btn = ttk.Button(self.expense_frame, text=labels[i], command="",
-                             style="Cumulate.TButton")
-            entry = SnapbackEntry(self.expense_frame, textvariable=var, font="Roboto 12", justify=CENTER)
+            btn = ttk.Button(self.expense_frame, text=labels[i], style="Cumulate.TButton",
+                             command=partial(self.cumulate_expense_clicked, labels[i]))
+            entry = SnapbackEntry(self.expense_frame, font="Roboto 12", justify=CENTER)
 
             btn.grid(row=0, column=i, padx=5, pady=5, sticky=NSEW)
             entry.grid(row=1, column=i, padx=5, pady=5, sticky=NSEW)
-            self.expenses[labels[i]] = {"btn": btn, "var": var, "ent": entry}
+            self.expenses[labels[i]] = {"btn": btn, "ent": entry}
 
     def _make_recent_widgets(self):
         """ Creates text-less Labels and grids onto recent frame """
@@ -120,23 +119,19 @@ class TKBudget:
         labels = ["Cody", "Sam", "Other"]
 
         for i in range(len(labels)):
-            var = StringVar()
             btn = ttk.Button(self.income_frame, command="",
                              text=labels[i], style="Cumulate.TButton")
-            se = SnapbackEntry(self.income_frame, textvariable=var,
-                               font="Roboto " + "15 italic", justify=CENTER)
+            se = SnapbackEntry(self.income_frame, font="Roboto " + "15 italic", justify=CENTER)
 
             se.grid(row=i, column=1, pady=5, padx=5, sticky=NSEW)
             btn.grid(row=i, column=0, pady=5, padx=5, sticky=NSEW)
 
-            self.incomes[labels[i]] = {"btn": btn, "ent": se, "var": var}
+            self.incomes[labels[i]] = {"btn": btn, "ent": se}
 
     def _initialize_expense_colors(self, expense_data: list):
         """ Initializes expense Labels with color grade """
-        print(expense_data)
         for expense in expense_data:
             self.color_expense_label(expense[0], expense[1])
-            print("Color changed")
 
     def _initialize_expense_entries(self, expense_data: list):
         """ Initializes expense Entries with current expense data """
@@ -196,6 +191,12 @@ class TKBudget:
         self.master.after(100, self._process_queue())
         return
 
+    def thread_cumulate_expense(self, category, value, queue_id):
+        self.nfsheet.add_expense(category, value)
+        expense_value = self.nfsheet.get_cell_dollar_data(self.nfsheet.expense_alphanums[category])
+        self.queue.put([queue_id, [category, expense_value]])
+        self.master.after(50, self._process_queue)
+
     def _process_queue(self):
         """ Processes queue data and calls linked functions """
         try:
@@ -209,6 +210,8 @@ class TKBudget:
                     self._initialize_incomes(output[1])
                 case "init_plot":
                     self.grid_plot(output[1])
+                case "cumulate_exp":
+                    self.update_expense_gui(output[1][0], output[1][1])
 
         except queue.Empty:
             print("Queue empty, rerunning")
@@ -235,36 +238,17 @@ class TKBudget:
         bar_graph = FigureCanvasTkAgg(figure, self.graph_frame)
         bar_graph.get_tk_widget().pack(padx=10, pady=10, expand=True, fill=BOTH)
 
-    # def _make_graph(self):
-    #     """ WIP """
-    #     if self.graph_frame:
-    #         self.graph_frame.destroy()
-    #     self.master.after(100, self.thread_graph)
-    #
-    # def process_queue(self):
-    #     try:
-    #         msg = self.queue.get_nowait()
-    #     except queue.Empty:
-    #         self.master.after(100, self.process_queue)
-    #
-    # def start_expense_color_thread(self, category):
-    #     """
-    #     Configures button color changes based on expense percentages
-    #     Assumes order of expenses are:
-    #     [Dining, Grocery, Transport, Recreation, Personal, JL, Other]
-    #     """
-    #     threading.Thread(target=)
-    #     self.master.after(100, self.process_queue)
-
-    # def queue_command(self, func: callable, *args):
-    #     pass
-    #
-
-
     """ BUTTON FUNCTIONS ---------------------------------------------------------------------------------"""
 
-    # def cumulate_expense_thread(self, column, value):
-    #     self.nfsheet.add_expense(column + 1, value)
+    def cumulate_expense_clicked(self, expense_label: str):
+        value = self.expenses[expense_label]["ent"].get()
+        threading.Thread(target=self.thread_cumulate_expense, args=(expense_label, value, "cumulate_exp")).start()
+
+    def update_expense_gui(self, category: str, value: str):
+        self.expenses[category]["ent"].delete(0, END)
+        self.expenses[category]["ent"].insert(0, value)
+
+        # self.nfsheet.add_expense(column + 1, value)
     #
     # def start_cumulate_income_thread(self, column):
     #     if self.expense_entries[column].current_text is not None:
