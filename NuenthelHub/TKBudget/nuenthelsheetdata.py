@@ -24,10 +24,10 @@ class NuenthelSheetsData:
         """ Initializes with first sheet of the N-Fam 2022 budget workbook """
         self.ss = SheetService("N-Fam 2022", 0)
         self.expenses = ["Dining", "Grocery", "Transport", "Recreation", "Personal", "JL", "Other"]
-        self.expense_cols = {category: i for i, category in enumerate(self.expenses)}
+        self.expense_cols = {category: i+1 for i, category in enumerate(self.expenses)}
         self.expense_alphanums = {category: "C"+str(i+78) for i, category in enumerate(self.expenses)}
         self.incomes = ["Cody", "Sam", "Other"]
-        print(self.expense_alphanums)
+        self.income_alphanums = {"Cody": "C56", "Sam": "C57", "Other": "C58"}
 
     def get_expense_percent(self, category: str) -> int:
         """ Return percent cell value of a given expense category

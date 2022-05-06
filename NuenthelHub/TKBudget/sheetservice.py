@@ -16,16 +16,17 @@ update the sheet, so data can be queued without the requirement of an API call.
 
 The thread will pull worksheet data from Google Sheets every 30 seconds (Google limits Sheets
 API requests to 1 per second (according to asyncio-gspread). SheetService and gspread do not
-limit API requests so this limit can be broke.
+limit API requests so this limit can be broke, removing authorization.
 """
 
-# import gspread_asyncio
+# import gspread_asyncio   # Commented out for, used with asyncio-gspread
 import gspread
 import pathlib
 import typing
 # from google.oauth2 import service_account as sa  # Commented out for, used with asyncio-gspread
 from NuenthelHub.secret import secret_path
 import threading
+import time
 
 """ Typing Variables """
 Pathlike = typing.Union[str, pathlib.Path]
@@ -61,46 +62,59 @@ class SheetService:
         self.manager = SyncSheetManager
         self.workbook_name = workbook_name
         self.sheet_index = sheet_index
-        self.worksheet = self.manager.open(workbook_name).get_worksheet(sheet_index)
-        self._start_worksheet_thread()
-
-    def _start_worksheet_thread(self):
-        """ Runs a parallel thread that will update the worksheet every 30 seconds """
-        RepeatTimer(30, self._get_worksheet).start()
+        self.worksheet = None
 
     def _get_worksheet(self):
         """ Pulls a spreadsheet page from a workbook """
         self.worksheet = self.manager.open(self.workbook_name).get_worksheet(self.sheet_index)
+        return self.worksheet
 
-    def get_cell_value(self, alphanumeric_coord: str):
+    def get_cell_value(self, alphanumeric_coord: str, init: bool = False):
         """ Returns cell value at given alphanumeric coordinate, i.e. 'B1'
 
         @param alphanumeric_coord {str} Sheet numeric/alphabetic coordinate of a cell
+        @param init {bool} Declares if data should be pulled via initialization to prevent rate limit error
         """
+        if not init:
+            time.sleep(1)
+            worksheet = self._get_worksheet()
+            return worksheet.acell(alphanumeric_coord).value
         return self.worksheet.acell(alphanumeric_coord).value
 
-    def get_column_values(self, column_number: int) -> list:
+    def get_column_values(self, column_number: int, init: bool = False) -> list:
         """ Returns all values of a desired column indexed from left to right
 
         @param column_number {int} Sheet column numeric ID
+        @param init {bool} Declares if data should be pulled via initialization to prevent rate limit error
         """
+        if not init:
+            time.sleep(1)
+            worksheet = self._get_worksheet()
+            return worksheet.col_values(column_number)
         return self.worksheet.col_values(column_number)
 
-    def update_cell(self, alphanumeric_coord: str, data: str or int):
+    def update_cell(self, alphanumeric_coord: str, data: str or int, init: bool = False):
         """ Updates a cell by alphanumeric index
 
         @param alphanumeric_coord {str} Sheet numeric/alphabetic coordinate of a cell
         @param data {str/int} Data to be posted to cell
+        @param init {bool} Declares if data should be pulled via initialization to prevent rate limit error
         """
+        if not init:
+            worksheet = self._get_worksheet()
+            return worksheet.update(alphanumeric_coord, data)
         return self.worksheet.update(alphanumeric_coord, data)
 
-    def update_cell_by_coord(self, row_coord: int, col_coord: int, data: str or int):
+    def update_cell_by_coord(self, row_coord: int, col_coord: int, data: str or int, init: bool = False):
         """ Updates a cell by sheet binary coordinates
 
         @param row_coord {int} Sheet row numeric coordinate
         @param col_coord {int} Sheet column numeric coordinate
         @param data {str/int} Data to be posted to cell
         """
+        if not init:
+            worksheet = self._get_worksheet()
+            return worksheet.update_cell(row_coord, col_coord, data)
         return self.worksheet.update_cell(row_coord, col_coord, data)
 
 

@@ -119,7 +119,7 @@ class TKBudget:
         labels = ["Cody", "Sam", "Other"]
 
         for i in range(len(labels)):
-            btn = ttk.Button(self.income_frame, command="",
+            btn = ttk.Button(self.income_frame, command=partial(self.cumulate_income_clicked, labels[i]),
                              text=labels[i], style="Cumulate.TButton")
             se = SnapbackEntry(self.income_frame, font="Roboto " + "15 italic", justify=CENTER)
 
@@ -197,6 +197,12 @@ class TKBudget:
         self.queue.put([queue_id, [category, expense_value]])
         self.master.after(50, self._process_queue)
 
+    def thread_cumulate_income(self, category, value, queue_id):
+        self.nfsheet.cumulate_dollar_format_cell(value, self.nfsheet.income_alphanums[category])
+        new_value = self.nfsheet.get_income_total(category)
+        self.queue.put([queue_id, [category, new_value]])
+        self.master.after(50, self._process_queue)
+
     def _process_queue(self):
         """ Processes queue data and calls linked functions """
         try:
@@ -211,6 +217,8 @@ class TKBudget:
                 case "init_plot":
                     self.grid_plot(output[1])
                 case "cumulate_exp":
+                    self.update_expense_gui(output[1][0], output[1][1])
+                case "cumulate_inc":
                     self.update_expense_gui(output[1][0], output[1][1])
 
         except queue.Empty:
@@ -244,9 +252,18 @@ class TKBudget:
         value = self.expenses[expense_label]["ent"].get()
         threading.Thread(target=self.thread_cumulate_expense, args=(expense_label, value, "cumulate_exp")).start()
 
+    def cumulate_income_clicked(self, income_label: str):
+        value = self.incomes[income_label]["ent"].get()
+        threading.Thread(target=self.thread_cumulate_income, args=(income_label, value, "cumulate_inc")).start()
+
     def update_expense_gui(self, category: str, value: str):
         self.expenses[category]["ent"].delete(0, END)
         self.expenses[category]["ent"].insert(0, value)
+
+    #TODO concat error on income update
+    def update_income_gui(self, category: str, value: str):
+        self.incomes[category]["ent"].delete(0, END)
+        self.incomes[category]["ent"].insert(0, value)
 
         # self.nfsheet.add_expense(column + 1, value)
     #
