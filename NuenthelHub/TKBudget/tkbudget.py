@@ -3,11 +3,14 @@ from tkinter import Frame, Tk, NSEW, CENTER, FLAT, Label, GROOVE, W, EW, BOTH, E
 from tkinter import ttk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from TKBudget.expenseplot import ExpensePlot
-from supportmodules.modifiedwidgets import HoverLabel, SnapbackEntry
+from supportmodules.modifiedwidgets import SnapbackEntry
 from NuenthelHub.TKBudget import nuenthelsheetdata as nsd
+from NuenthelHub.TKBudget import sheetservice as sheetserv
 import threading
 import queue
 
+
+# TODO Google API Ratelimit on update button press
 
 class TKBudget:
     """ Creates a top level GUI for budget handling
@@ -21,10 +24,12 @@ class TKBudget:
         """ Window Attributes """
         self.master = master
         self.callback = callback
-        self.graph_frame = None
+        self.bar_graph = None
+        self.graph_holder_frame = None
 
         """ External Helper Classes """
         self.nfsheet = nsd.NuenthelSheetsData()
+        self.ss = sheetserv.SheetService("N-Fam 2022", 0)
 
         """ The Queue """
         self.queue = queue.Queue()
@@ -62,6 +67,7 @@ class TKBudget:
         self._configure_rows_cols(self.recent_frame)
         self._configure_rows_cols(self.income_frame)
         self._configure_rows_cols(self.sidebar_frame)
+        self._configure_rows_cols(self.graph_frame)
 
     def repack_module(self):
         """ Repacks the main frame and sidebar frame of the Budget page, called to return
@@ -91,6 +97,8 @@ class TKBudget:
         """ Constructs sidebar widgets and packs onto sidebar frame """
         return_btn = ttk.Button(self.sidebar_frame, text="Return", command=self.return_to_main)
         return_btn.pack(expand=True, fill=BOTH)
+        update_btn = ttk.Button(self.sidebar_frame, text="Update", command=self.update_from_sheet)
+        update_btn.pack(expand=True, fill=BOTH)
 
     def _make_expense_widgets(self):
         """ Creates a Button and Entry for each expense and grids onto expense frame """
@@ -136,11 +144,13 @@ class TKBudget:
     def _initialize_expense_entries(self, expense_data: list):
         """ Initializes expense Entries with current expense data """
         for expense in expense_data:
+            self.expenses[expense[0]]["ent"].delete(0, END)
             self.expenses[expense[0]]["ent"].insert(0, expense[1])
 
     def _initialize_incomes(self, income_data: list):
         """ Initializes income Entries with current income data """
         for income in income_data:
+            self.incomes[income[0]]["ent"].delete(0, END)
             self.incomes[income[0]]["ent"].insert(0, income[1])
 
     def _initialization_threads(self):
@@ -219,7 +229,7 @@ class TKBudget:
                 case "cumulate_exp":
                     self.update_expense_gui(output[1][0], output[1][1])
                 case "cumulate_inc":
-                    self.update_expense_gui(output[1][0], output[1][1])
+                    self.update_income_gui(output[1][0], output[1][1])
 
         except queue.Empty:
             print("Queue empty, rerunning")
@@ -243,8 +253,15 @@ class TKBudget:
         self.recents[0]["text"] = f"[{expense_class}] ${value}"
 
     def grid_plot(self, figure):
-        bar_graph = FigureCanvasTkAgg(figure, self.graph_frame)
-        bar_graph.get_tk_widget().pack(padx=10, pady=10, expand=True, fill=BOTH)
+        if self.bar_graph:
+            self.graph_frame.destroy()
+
+        self.graph_frame = Frame(self.main_frame, background="white", borderwidth=3, relief=GROOVE)
+        self.graph_frame.grid(row=1, column=0, sticky=NSEW, padx=5, pady=5)
+        self._configure_rows_cols(self.graph_frame)
+
+        self.bar_graph = FigureCanvasTkAgg(figure, self.graph_frame)
+        self.bar_graph.get_tk_widget().pack(padx=10, pady=10, expand=True, fill=BOTH)
 
     """ BUTTON FUNCTIONS ---------------------------------------------------------------------------------"""
 
@@ -260,47 +277,18 @@ class TKBudget:
         self.expenses[category]["ent"].delete(0, END)
         self.expenses[category]["ent"].insert(0, value)
 
-    #TODO concat error on income update
     def update_income_gui(self, category: str, value: str):
         self.incomes[category]["ent"].delete(0, END)
         self.incomes[category]["ent"].insert(0, value)
 
-        # self.nfsheet.add_expense(column + 1, value)
-    #
-    # def start_cumulate_income_thread(self, column):
-    #     if self.expense_entries[column].current_text is not None:
-    #         value = self.expense_entries[column].get()
-    #         threading.Thread(target=self.cumulate_expense_thread(column, value), daemon=True).start()
-    #         self.master.after(1000, self._update_expense_entries)  # Recalculate and show expense entries
-    #         self.expense_entries[column].current_text = None  # Reset entry attribute current text to none
-    #         self._configure_recents(self.expense_labels[column].cget("text"), value)  # add expense to recent expenses
-    #         # self._make_graph()
-    #
-    # def cumulate_income(self, column):
-    #     """ Cumulate income for Cody,Sam,Other entries """
-    #     if self.income_entries[column].current_text is not None:
-    #         value = float(self.income_entries[column].get())
-    #         str_repr = "Err"  # placeholder to show err if unmatched col
-    #
-    #         match column:
-    #             case 0:
-    #                 self.nfsheet.cumulate_dollar_format_cell(value, "C56")
-    #                 str_repr = "CInc"
-    #             case 1:
-    #                 self.nfsheet.cumulate_dollar_format_cell(value, "C57")
-    #                 str_repr = "SInc"
-    #             case 2:
-    #                 self.nfsheet.cumulate_dollar_format_cell(value, "C58")
-    #                 str_repr = "OInc"
-    #
-    #         self._configure_recents(str_repr, value)
-    #         self._configure_incomes()
-    #         # self._make_graph()
-    #
     def return_to_main(self):
         self.main_frame.grid_remove()
         self.sidebar_frame.grid_remove()
         self.callback()
+
+    def update_from_sheet(self):
+        self.nfsheet.update_sheet()
+        self._initialization_threads()
 
     """ STATIC METHODS ---------------------------------------------------------------------------------------"""
 

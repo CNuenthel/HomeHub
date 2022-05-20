@@ -29,6 +29,10 @@ class NuenthelSheetsData:
         self.incomes = ["Cody", "Sam", "Other"]
         self.income_alphanums = {"Cody": "C56", "Sam": "C57", "Other": "C58"}
 
+    def update_sheet(self):
+        """ Updates the currently held worksheet """
+        self.ss = SheetService("N-Fam 2022", 0)
+
     def get_expense_percent(self, category: str) -> int:
         """ Return percent cell value of a given expense category
 
@@ -39,19 +43,19 @@ class NuenthelSheetsData:
                              "Dining, Grocery, Transport, Recreation, Personal, JL, Other")
         match category:
             case "Dining":
-                return int(self.get_cell_value("B78")[:-1])
+                return int(self.ss.get_cell_value("B78")[:-1])
             case "Grocery":
-                return int(self.get_cell_value("B79")[:-1])
+                return int(self.ss.get_cell_value("B79")[:-1])
             case "Transport":
-                return int(self.get_cell_value("B80")[:-1])
+                return int(self.ss.get_cell_value("B80")[:-1])
             case "Recreation":
-                return int(self.get_cell_value("B81")[:-1])
+                return int(self.ss.get_cell_value("B81")[:-1])
             case "Personal":
-                return int(self.get_cell_value("B82")[:-1])
+                return int(self.ss.get_cell_value("B82")[:-1])
             case "JL":
-                return int(self.get_cell_value("B83")[:-1])
+                return int(self.ss.get_cell_value("B83")[:-1])
             case "Other":
-                return int(self.get_cell_value("B84")[:-1])
+                return int(self.ss.get_cell_value("B84")[:-1])
 
     def get_expense_total(self, category: str) -> int:
         """ Return cell value of a given expense category
@@ -63,19 +67,19 @@ class NuenthelSheetsData:
                              "Dining, Grocery, Transport, Recreation, Personal, JL, Other")
         match category:
             case "Dining":
-                return self.get_cell_value("C78")
+                return self.ss.get_cell_value("C78")
             case "Grocery":
-                return self.get_cell_value("C79")
+                return self.ss.get_cell_value("C79")
             case "Transport":
-                return self.get_cell_value("C80")
+                return self.ss.get_cell_value("C80")
             case "Recreation":
-                return self.get_cell_value("C81")
+                return self.ss.get_cell_value("C81")
             case "Personal":
-                return self.get_cell_value("C82")
+                return self.ss.get_cell_value("C82")
             case "JL":
-                return self.get_cell_value("C83")
+                return self.ss.get_cell_value("C83")
             case "Other":
-                return self.get_cell_value("C84")
+                return self.ss.get_cell_value("C84")
 
     def get_income_total(self, category: str) -> int:
         """ Returns income cell value for Cody, Sam or Other
@@ -87,11 +91,11 @@ class NuenthelSheetsData:
                              f"Cody, Sam, Other")
         match category:
             case "Cody":
-                return self.get_cell_value("C56")
+                return self.ss.get_cell_value("C56")
             case "Sam":
-                return self.get_cell_value("C57")
+                return self.ss.get_cell_value("C57")
             case "Other":
-                return self.get_cell_value("C58")
+                return self.ss.get_cell_value("C58")
 
     def get_used_data(self) -> str:
         """ Returns value of total monthly budget used """
@@ -122,7 +126,7 @@ class NuenthelSheetsData:
         :param alphanum_cell_coord alpha numeric coordinate of sheet cell
         """
         current_value = self.get_cell_dollar_data(alphanum_cell_coord)
-        additional_value += self.reformat_dollar_string(current_value)
+        additional_value = float(additional_value) + self.reformat_dollar_string(current_value)
         return self.ss.update_cell(alphanum_cell_coord, additional_value)
 
     # TODO This is currently throwing an exception for incorrect cell label for self.worksheet.col_values(

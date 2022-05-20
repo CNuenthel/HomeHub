@@ -63,58 +63,44 @@ class SheetService:
         self.workbook_name = workbook_name
         self.sheet_index = sheet_index
         self.worksheet = None
+        self.get_worksheet()
 
-    def _get_worksheet(self):
+    def get_worksheet(self):
         """ Pulls a spreadsheet page from a workbook """
         self.worksheet = self.manager.open(self.workbook_name).get_worksheet(self.sheet_index)
-        return self.worksheet
 
-    def get_cell_value(self, alphanumeric_coord: str, init: bool = False):
+    def get_cell_value(self, alphanumeric_coord: str):
         """ Returns cell value at given alphanumeric coordinate, i.e. 'B1'
 
         @param alphanumeric_coord {str} Sheet numeric/alphabetic coordinate of a cell
         @param init {bool} Declares if data should be pulled via initialization to prevent rate limit error
         """
-        if not init:
-            time.sleep(1)
-            worksheet = self._get_worksheet()
-            return worksheet.acell(alphanumeric_coord).value
         return self.worksheet.acell(alphanumeric_coord).value
 
-    def get_column_values(self, column_number: int, init: bool = False) -> list:
+    def get_column_values(self, column_number: int) -> list:
         """ Returns all values of a desired column indexed from left to right
 
         @param column_number {int} Sheet column numeric ID
         @param init {bool} Declares if data should be pulled via initialization to prevent rate limit error
         """
-        if not init:
-            time.sleep(1)
-            worksheet = self._get_worksheet()
-            return worksheet.col_values(column_number)
         return self.worksheet.col_values(column_number)
 
-    def update_cell(self, alphanumeric_coord: str, data: str or int, init: bool = False):
+    def update_cell(self, alphanumeric_coord: str, data: str or int):
         """ Updates a cell by alphanumeric index
 
         @param alphanumeric_coord {str} Sheet numeric/alphabetic coordinate of a cell
         @param data {str/int} Data to be posted to cell
         @param init {bool} Declares if data should be pulled via initialization to prevent rate limit error
         """
-        if not init:
-            worksheet = self._get_worksheet()
-            return worksheet.update(alphanumeric_coord, data)
         return self.worksheet.update(alphanumeric_coord, data)
 
-    def update_cell_by_coord(self, row_coord: int, col_coord: int, data: str or int, init: bool = False):
+    def update_cell_by_coord(self, row_coord: int, col_coord: int, data: str or int):
         """ Updates a cell by sheet binary coordinates
 
         @param row_coord {int} Sheet row numeric coordinate
-        @param col_coord {int} Sheet column numeric coordinate
+         @param col_coord {int} Sheet column numeric coordinate
         @param data {str/int} Data to be posted to cell
         """
-        if not init:
-            worksheet = self._get_worksheet()
-            return worksheet.update_cell(row_coord, col_coord, data)
         return self.worksheet.update_cell(row_coord, col_coord, data)
 
 
