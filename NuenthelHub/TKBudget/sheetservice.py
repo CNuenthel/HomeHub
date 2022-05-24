@@ -76,7 +76,6 @@ class SheetService:
         @param init {bool} Declares if data should be pulled via initialization to prevent rate limit error
         """
         if not init:
-            time.sleep(1)
             worksheet = self._get_worksheet()
             return worksheet.acell(alphanumeric_coord).value
         return self.worksheet.acell(alphanumeric_coord).value
@@ -88,7 +87,6 @@ class SheetService:
         @param init {bool} Declares if data should be pulled via initialization to prevent rate limit error
         """
         if not init:
-            time.sleep(1)
             worksheet = self._get_worksheet()
             return worksheet.col_values(column_number)
         return self.worksheet.col_values(column_number)

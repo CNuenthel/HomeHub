@@ -76,7 +76,6 @@ class TKBudget:
         self.expense_frame = Frame(self.main_frame, background="white", borderwidth=3, relief=GROOVE)
         self.recent_frame = Frame(self.main_frame, background="white", borderwidth=3, relief=GROOVE)
         self.income_frame = Frame(self.main_frame, background="white", borderwidth=3, relief=GROOVE)
-        self.graph_frame = Frame(self.main_frame, background="white", borderwidth=3, relief=GROOVE)
 
     def _grid_frames(self):
         """ Assigns all required frame widgets on master using grid manager """
@@ -85,7 +84,6 @@ class TKBudget:
         self.expense_frame.grid(row=0, column=0, columnspan=3, sticky=NSEW, padx=10, pady=10)
         self.recent_frame.grid(row=1, column=1, padx=5, pady=5, sticky=NSEW)
         self.income_frame.grid(row=1, column=2, padx=5, pady=5, sticky=NSEW)
-        self.graph_frame.grid(row=1, column=0, sticky=NSEW, padx=5, pady=5)
 
     def _make_sidebar_widgets(self):
         """ Constructs sidebar widgets and packs onto sidebar frame """
@@ -192,13 +190,17 @@ class TKBudget:
         return
 
     def thread_cumulate_expense(self, category, value, queue_id):
+        """ Thread process I/O request to NuenthelSheets for cumulating expenses and place results
+         in the queue. List structure = [queue_id: str, [expense category: str, expense value: int]]"""
         self.nfsheet.add_expense(category, value)
         expense_value = self.nfsheet.get_cell_dollar_data(self.nfsheet.expense_alphanums[category])
         self.queue.put([queue_id, [category, expense_value]])
         self.master.after(50, self._process_queue)
 
     def thread_cumulate_income(self, category, value, queue_id):
-        self.nfsheet.cumulate_dollar_format_cell(value, self.nfsheet.income_alphanums[category])
+        """ Thread process I/O request to NuenthelSheets for cumulating incomes and place results
+         in the queue. List structure = [queue_id: str, [income category: str, added value: int]]"""
+        self.nfsheet.cumulate_dollar_format_cell(float(value), self.nfsheet.income_alphanums[category])
         new_value = self.nfsheet.get_income_total(category)
         self.queue.put([queue_id, [category, new_value]])
         self.master.after(50, self._process_queue)
@@ -218,14 +220,17 @@ class TKBudget:
                     self.grid_plot(output[1])
                 case "cumulate_exp":
                     self.update_expense_gui(output[1][0], output[1][1])
+                    threading.Thread(target=self.create_plot, args=("init_plot",)).start()
                 case "cumulate_inc":
-                    self.update_expense_gui(output[1][0], output[1][1])
+                    self.update_income_gui(output[1][0], output[1][1])
+                    threading.Thread(target=self.create_plot, args=("init_plot",)).start()
 
         except queue.Empty:
             print("Queue empty, rerunning")
             self.master.after(100, self._process_queue)
 
     def color_expense_label(self, category, percentage: int):
+        """ Color expense labels to coordinate with percentage of expense """
         if percentage is None or percentage < 50:
             self.expenses[category]["btn"].configure(style="GrnCumulate.TButton")
         elif 50 <= percentage < 75:
@@ -243,60 +248,39 @@ class TKBudget:
         self.recents[0]["text"] = f"[{expense_class}] ${value}"
 
     def grid_plot(self, figure):
+        """ Place plot on the graph frame via grid manager """
+        if self.graph_frame:
+            self.graph_frame.destroy()
+
+        self.graph_frame = Frame(self.main_frame, background="white", borderwidth=3, relief=GROOVE)
+        self.graph_frame.grid(row=1, column=0, sticky=NSEW, padx=5, pady=5)
+
         bar_graph = FigureCanvasTkAgg(figure, self.graph_frame)
         bar_graph.get_tk_widget().pack(padx=10, pady=10, expand=True, fill=BOTH)
 
     """ BUTTON FUNCTIONS ---------------------------------------------------------------------------------"""
 
     def cumulate_expense_clicked(self, expense_label: str):
+        """ Detect cumulate expense keypress and start cumulate expense thread """
         value = self.expenses[expense_label]["ent"].get()
         threading.Thread(target=self.thread_cumulate_expense, args=(expense_label, value, "cumulate_exp")).start()
 
     def cumulate_income_clicked(self, income_label: str):
+        """ Detect cumulate income keypress and start cumulate expense thread """
         value = self.incomes[income_label]["ent"].get()
         threading.Thread(target=self.thread_cumulate_income, args=(income_label, value, "cumulate_inc")).start()
 
     def update_expense_gui(self, category: str, value: str):
+        """ Update expense entry to show updated total expense value """
         self.expenses[category]["ent"].delete(0, END)
         self.expenses[category]["ent"].insert(0, value)
+        self.add_recent(category, value)
 
-    #TODO concat error on income update
     def update_income_gui(self, category: str, value: str):
         self.incomes[category]["ent"].delete(0, END)
         self.incomes[category]["ent"].insert(0, value)
+        self.add_recent(category, value)
 
-        # self.nfsheet.add_expense(column + 1, value)
-    #
-    # def start_cumulate_income_thread(self, column):
-    #     if self.expense_entries[column].current_text is not None:
-    #         value = self.expense_entries[column].get()
-    #         threading.Thread(target=self.cumulate_expense_thread(column, value), daemon=True).start()
-    #         self.master.after(1000, self._update_expense_entries)  # Recalculate and show expense entries
-    #         self.expense_entries[column].current_text = None  # Reset entry attribute current text to none
-    #         self._configure_recents(self.expense_labels[column].cget("text"), value)  # add expense to recent expenses
-    #         # self._make_graph()
-    #
-    # def cumulate_income(self, column):
-    #     """ Cumulate income for Cody,Sam,Other entries """
-    #     if self.income_entries[column].current_text is not None:
-    #         value = float(self.income_entries[column].get())
-    #         str_repr = "Err"  # placeholder to show err if unmatched col
-    #
-    #         match column:
-    #             case 0:
-    #                 self.nfsheet.cumulate_dollar_format_cell(value, "C56")
-    #                 str_repr = "CInc"
-    #             case 1:
-    #                 self.nfsheet.cumulate_dollar_format_cell(value, "C57")
-    #                 str_repr = "SInc"
-    #             case 2:
-    #                 self.nfsheet.cumulate_dollar_format_cell(value, "C58")
-    #                 str_repr = "OInc"
-    #
-    #         self._configure_recents(str_repr, value)
-    #         self._configure_incomes()
-    #         # self._make_graph()
-    #
     def return_to_main(self):
         self.main_frame.grid_remove()
         self.sidebar_frame.grid_remove()
