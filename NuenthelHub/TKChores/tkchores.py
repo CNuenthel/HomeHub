@@ -221,9 +221,6 @@ class TKChores:
         ChoreController.update_doc(chore, chore.id)
 
     def _bind_complete_btn_state_to_om(self, *args):
-        print(self.daily_chores)
-        print(self.weekly_chores)
-        print(self.monthly_chores)
         match args[1]:
             case "Daily":
                 if args[1] == "Select":
@@ -282,13 +279,16 @@ class TKChores:
             case "Daily":
                 self.daily_chore_frame.destroy()
                 self._make_daily_chore_window()
+                self._make_daily_chore_window()
                 self._configure_chores(daily=True)
             case "Weekly":
                 self.weekly_chore_frame.destroy()
+                self._make_weekly_chore_window()
                 self._make_daily_chore_window()
                 self._configure_chores(weekly=True)
             case "Monthly":
                 self.monthly_chore_frame.destroy()
+                self._make_monthly_chore_window()
                 self._make_daily_chore_window()
                 self._configure_chores(monthly=True)
 

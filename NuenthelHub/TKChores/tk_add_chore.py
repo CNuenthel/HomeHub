@@ -32,10 +32,8 @@ class TKAddChoreExtension:
 
     def _create_main_frame(self):
         """ Create a frame for add chore widgets """
-        self.border_frame = Frame(self.root)
-        self.border_frame.grid(row=self.grid_row_start, column=0, columnspan=self.column_count, sticky=NSEW)
         self.main_frame = Frame(self.root, style="BG.TFrame")
-        self.main_frame.grid(row=self.grid_row_start, column=0, columnspan=self.column_count, sticky=NSEW, padx=10,
+        self.main_frame.grid(row=self.grid_row_start, column=0, sticky=NSEW, padx=10,
                              pady=10)
 
     def _make_header(self):

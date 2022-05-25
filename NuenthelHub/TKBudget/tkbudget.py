@@ -85,7 +85,7 @@ class TKBudget:
         """ Assigns all required frame widgets on master using grid manager """
         self.main_frame.grid(row=0, column=0, padx=10, pady=10, sticky=NSEW, columnspan=4, rowspan=2)
         self.sidebar_frame.grid(row=0, column=5, padx=10, pady=10, ipadx=30, sticky=NSEW)
-        self.expense_frame.grid(row=0, column=0, columnspan=3, sticky=NSEW, padx=10, pady=10)
+        self.expense_frame.grid(row=0, column=0, columnspan=3, sticky=NSEW, padx=5, pady=10)
         self.recent_frame.grid(row=1, column=1, padx=5, pady=5, sticky=NSEW)
         self.income_frame.grid(row=1, column=2, padx=5, pady=5, sticky=NSEW)
 
