@@ -5,7 +5,6 @@ from tkinter import font
 from TKLevelUp import housemembersrpg, member
 from TKCalendar import tkcalendar as tkc
 from TKBudget import tkbudget as tkb
-from TKBudget.nuenthelsheetdata import NuenthelSheetsData
 from TKChores import tkchores as tkchore
 import threading
 

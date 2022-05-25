@@ -23,6 +23,7 @@ class NuenthelSheetsData:
     def __init__(self):
         """ Initializes with first sheet of the N-Fam 2022 budget workbook """
         self.ss = SheetService("N-Fam 2022", 0)
+        self.ss.get_worksheet()
         self.expenses = ["Dining", "Grocery", "Transport", "Recreation", "Personal", "JL", "Other"]
         self.expense_cols = {category: i+1 for i, category in enumerate(self.expenses)}
         self.expense_alphanums = {category: "C"+str(i+78) for i, category in enumerate(self.expenses)}

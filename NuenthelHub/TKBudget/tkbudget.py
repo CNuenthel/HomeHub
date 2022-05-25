@@ -1,12 +1,14 @@
+import tkinter.messagebox
 from functools import partial
-from tkinter import Frame, Tk, NSEW, CENTER, FLAT, Label, GROOVE, W, EW, BOTH, END, Button, StringVar
+from tkinter import Frame, NSEW, CENTER, Label, GROOVE, BOTH, END
 from tkinter import ttk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from TKBudget.expenseplot import ExpensePlot
-from supportmodules.modifiedwidgets import HoverLabel, SnapbackEntry
+from supportmodules.modifiedwidgets import SnapbackEntry
 from NuenthelHub.TKBudget import nuenthelsheetdata as nsd
 import threading
 import queue
+import datetime as dt
 
 
 class TKBudget:
@@ -22,6 +24,7 @@ class TKBudget:
         self.master = master
         self.callback = callback
         self.graph_frame = None
+        self.update_timestamp = dt.datetime.now()
 
         """ External Helper Classes """
         self.nfsheet = nsd.NuenthelSheetsData()
@@ -44,6 +47,7 @@ class TKBudget:
         self.style.configure("OrgCumulate.TButton", font="Roboto 12", background="#fdf1cc", borderwidth=10)
         self.style.configure("RedCumulate.TButton", font="Roboto 12", background="#fdd0cc", borderwidth=10)
         self.style.configure("Cumulate.TButton", font="Roboto 12", borderwidth=3)
+        self.style.configure("Update.TButton", justify=CENTER)
 
         """ GUI Constructor Functions """
         self._make_frames()
@@ -87,8 +91,14 @@ class TKBudget:
 
     def _make_sidebar_widgets(self):
         """ Constructs sidebar widgets and packs onto sidebar frame """
-        return_btn = ttk.Button(self.sidebar_frame, text="Return", command=self.return_to_main)
-        return_btn.pack(expand=True, fill=BOTH)
+        self.return_btn = ttk.Button(self.sidebar_frame, text="Return", command=self.return_to_main)
+        self.return_btn.pack(expand=True, fill=BOTH)
+        self.update_btn = ttk.Button(
+            self.sidebar_frame,
+            text=f"Update\n\n{self.update_timestamp.strftime('%m/%d - %H:%M')}",
+            command=self.update_gui,
+            style="Update.TButton")
+        self.update_btn.pack(expand=True, fill=BOTH)
 
     def _make_expense_widgets(self):
         """ Creates a Button and Entry for each expense and grids onto expense frame """
@@ -134,11 +144,13 @@ class TKBudget:
     def _initialize_expense_entries(self, expense_data: list):
         """ Initializes expense Entries with current expense data """
         for expense in expense_data:
+            self.expenses[expense[0]]["ent"].delete(0, END)
             self.expenses[expense[0]]["ent"].insert(0, expense[1])
 
     def _initialize_incomes(self, income_data: list):
         """ Initializes income Entries with current income data """
         for income in income_data:
+            self.incomes[income[0]]["ent"].delete(0, END)
             self.incomes[income[0]]["ent"].insert(0, income[1])
 
     def _initialization_threads(self):
@@ -149,12 +161,14 @@ class TKBudget:
         threading.Thread(target=self.create_plot, args=("init_plot",)).start()
 
     def create_plot(self, queue_id):
+        """ Creates TK Plot figure and adds final plot to the process queue handler """
         expense_values = [self.nfsheet.get_expense_total(category) for category in self.nfsheet.expenses]
         expense_percents = [self.nfsheet.get_expense_percent(category) for category in self.nfsheet.expenses]
         figure = ExpensePlot(expense_values, expense_percents, self.nfsheet.expenses).get_plot()
         self.queue.put([queue_id, figure])
         self.master.after(100, self._process_queue())
-        return
+
+    """ Thread Functions --------------------------------------------------------------------------------------------"""
 
     def thread_expense_percent(self, categories, queue_id):
         """ Thread process I/O request to NuenthelSheets expense percentage and place in queue
@@ -194,7 +208,7 @@ class TKBudget:
          in the queue. List structure = [queue_id: str, [expense category: str, expense value: int]]"""
         self.nfsheet.add_expense(category, value)
         expense_value = self.nfsheet.get_cell_dollar_data(self.nfsheet.expense_alphanums[category])
-        self.queue.put([queue_id, [category, expense_value]])
+        self.queue.put([queue_id, [category, expense_value, value]])
         self.master.after(50, self._process_queue)
 
     def thread_cumulate_income(self, category, value, queue_id):
@@ -202,8 +216,10 @@ class TKBudget:
          in the queue. List structure = [queue_id: str, [income category: str, added value: int]]"""
         self.nfsheet.cumulate_dollar_format_cell(float(value), self.nfsheet.income_alphanums[category])
         new_value = self.nfsheet.get_income_total(category)
-        self.queue.put([queue_id, [category, new_value]])
+        self.queue.put([queue_id, [category, new_value, value]])
         self.master.after(50, self._process_queue)
+
+    """ END THREAD FUNCTIONS ----------------------------------------------------------------------------------------"""
 
     def _process_queue(self):
         """ Processes queue data and calls linked functions """
@@ -219,11 +235,9 @@ class TKBudget:
                 case "init_plot":
                     self.grid_plot(output[1])
                 case "cumulate_exp":
-                    self.update_expense_gui(output[1][0], output[1][1])
-                    threading.Thread(target=self.create_plot, args=("init_plot",)).start()
+                    self.update_expense_gui(output[1][0], output[1][1], output[1][2])
                 case "cumulate_inc":
-                    self.update_income_gui(output[1][0], output[1][1])
-                    threading.Thread(target=self.create_plot, args=("init_plot",)).start()
+                    self.update_income_gui(output[1][0], output[1][1], output[1][2])
 
         except queue.Empty:
             print("Queue empty, rerunning")
@@ -245,7 +259,7 @@ class TKBudget:
         for i in range(len(self.recents) - 1, -1, -1):
             self.recents[i]["text"] = self.recents[i - 1]["text"]
 
-        self.recents[0]["text"] = f"[{expense_class}] ${value}"
+        self.recents[0]["text"] = f"[{expense_class}] {value}"
 
     def grid_plot(self, figure):
         """ Place plot on the graph frame via grid manager """
@@ -258,7 +272,7 @@ class TKBudget:
         bar_graph = FigureCanvasTkAgg(figure, self.graph_frame)
         bar_graph.get_tk_widget().pack(padx=10, pady=10, expand=True, fill=BOTH)
 
-    """ BUTTON FUNCTIONS ---------------------------------------------------------------------------------"""
+    """ BUTTON FUNCTIONS --------------------------------------------------------------------------------------------"""
 
     def cumulate_expense_clicked(self, expense_label: str):
         """ Detect cumulate expense keypress and start cumulate expense thread """
@@ -270,23 +284,43 @@ class TKBudget:
         value = self.incomes[income_label]["ent"].get()
         threading.Thread(target=self.thread_cumulate_income, args=(income_label, value, "cumulate_inc")).start()
 
-    def update_expense_gui(self, category: str, value: str):
+    def update_expense_gui(self, category: str, value: str, input_value: str):
         """ Update expense entry to show updated total expense value """
         self.expenses[category]["ent"].delete(0, END)
         self.expenses[category]["ent"].insert(0, value)
-        self.add_recent(category, value)
+        config_recent_value = "{:.2f}".format(float(input_value))
+        self.add_recent(category, f"${config_recent_value}")
 
-    def update_income_gui(self, category: str, value: str):
+    def update_income_gui(self, category: str, value: str, input_value: str):
+        """ Updates an income entry to show updated total income value """
         self.incomes[category]["ent"].delete(0, END)
         self.incomes[category]["ent"].insert(0, value)
-        self.add_recent(category, value)
+        config_recent_value = "{:.2f}".format(float(input_value))
+        self.add_recent(category, f"${config_recent_value}")
 
     def return_to_main(self):
+        """ Hide budget widgets and return to main window """
         self.main_frame.grid_remove()
         self.sidebar_frame.grid_remove()
         self.callback()
 
-    """ STATIC METHODS ---------------------------------------------------------------------------------------"""
+    def update_gui(self):
+        """ Updates all information from the budget sheet to capture changes made with unconnected apps """
+        now = dt.datetime.now()
+        if now - self.update_timestamp < dt.timedelta(minutes=30):
+            wait_time = (self.update_timestamp + dt.timedelta(minutes=30)).strftime('%H:%M')
+            tkinter.messagebox.showinfo(
+                title="Update",
+                message=f"Budget was recently updated. Please wait until "
+                        f"{wait_time} to update again.")
+            return
+
+        self._initialization_threads()
+        self.add_recent("Updated", now.strftime("%m/%d - %H:%M"))
+        self.update_timestamp = now
+        self.update_btn.configure(text=f"Update\n\n{self.update_timestamp.strftime('%m/%d - %H:%M')}")
+
+    """ STATIC METHODS ----------------------------------------------------------------------------------------------"""
 
     @staticmethod
     def _configure_rows_cols(master):
